@@ -1,21 +1,30 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: telegram-secret
+type: Opaque
+data:
+  TELEGRAM_BOT_TOKEN:  NzQ3ODA1NzI1MTpBQUVzRzdRdGxCdDdSc3ZpZ0xxOWpOMHFaM3NUdElGeUdwbw== # base64 encoded
+  TELEGRAM_CHAT_ID: NjU0OTU4NDIz # base64 encoded
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: service-adapter
+  name: service-communications
   labels:
-    app: service-adapter
+    app: service-communications
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: service-adapter
+      app: service-communications
   template:
     metadata:
       labels:
-        app: service-adapter
+        app: service-communications
     spec:
       containers:
-        - name: service-adapter
+        - name: service-communications
           image: airat139/mail-poller:latest
           imagePullPolicy: Always
           env:
@@ -23,6 +32,16 @@ spec:
               value: mailhog
             - name: MAILHOG_PORT
               value: "8025"
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: telegram-secret
+                  key: TELEGRAM_BOT_TOKEN
+            - name: TELEGRAM_CHAT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: telegram-secret
+                  key: TELEGRAM_CHAT_ID
             - name: LOG_LEVEL
               value: info
             - name: POSTGRES_HOST
@@ -32,7 +51,7 @@ spec:
             - name: POSTGRES_USER
               value: postgres
             - name: POSTGRES_DB
-              value: service_adapter
+              value: service_communications
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

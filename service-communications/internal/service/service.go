@@ -7,7 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/aimustaev/service-adapter/internal/adapter"
+	"github.com/aimustaev/service-communications/internal/adapter"
 )
 
 // Service represents the main service for processing messages

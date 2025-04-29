@@ -9,7 +9,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/aimustaev/service-adapter/internal/adapter"
+	"github.com/aimustaev/service-communications/internal/adapter"
 )
 
 // MailhogAdapter implements the Adapter interface for Mailhog
@@ -107,6 +107,7 @@ func (a *MailhogAdapter) GetMessages(ctx context.Context) ([]adapter.Message, er
 			Subject: getFirstHeader(item.Content.Headers.Subject),
 			Body:    item.Content.Body,
 			Tags:    []string{"processed"},
+			Channel: "email",
 		}
 		messages = append(messages, message)
 		// Save email to database

@@ -20,7 +20,7 @@ spec:
             - name: POSTGRES_USER
               value: postgres
             - name: POSTGRES_DB
-              value: service_adapter
+              value: service_communications
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -52,4 +52,8 @@ data:
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
   "000001_init_schema.down.sql": |
-    DROP TABLE IF EXISTS emails; 
+    DROP TABLE IF EXISTS emails;
+  "000002_add_channel_column.up.sql": |
+    ALTER TABLE emails ADD COLUMN channel VARCHAR(50) NOT NULL DEFAULT 'email';
+  "000002_add_channel_column.down.sql": |
+    ALTER TABLE emails DROP COLUMN channel; 

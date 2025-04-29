@@ -16,7 +16,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o mail-poller ./cmd/mail-poller
+RUN CGO_ENABLED=0 GOOS=linux go build -o mail-poller ./cmd/service
 
 # Final stage
 FROM alpine:latest
