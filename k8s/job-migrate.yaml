@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-db
+spec:
+  template:
+    spec:
+      containers:
+        - name: migrate
+          image: migrate/migrate
+          args:
+            - -path=/migrations
+            - -database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
+            - up
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: service_adapter
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+      volumes:
+        - name: migrations
+          configMap:
+            name: migrations-config
+      restartPolicy: Never
+  backoffLimit: 4
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: migrations-config
+data:
+  "000001_init_schema.up.sql": |
+    CREATE TABLE IF NOT EXISTS emails (
+        id TEXT PRIMARY KEY,
+        from_address TEXT NOT NULL,
+        to_address TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        body TEXT NOT NULL,
+        tags TEXT[] NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  "000001_init_schema.down.sql": |
+    DROP TABLE IF EXISTS emails; 

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-adapter
+  labels:
+    app: service-adapter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-adapter
+  template:
+    metadata:
+      labels:
+        app: service-adapter
+    spec:
+      containers:
+        - name: service-adapter
+          image: airat139/mail-poller:latest
+          imagePullPolicy: Always
+          env:
+            - name: MAILHOG_HOST
+              value: mailhog
+            - name: MAILHOG_PORT
+              value: "8025"
+            - name: LOG_LEVEL
+              value: info
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: service_adapter
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m" 

@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS emails (
+    id TEXT PRIMARY KEY,
+    from_address TEXT NOT NULL,
+    to_address TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    body TEXT NOT NULL,
+    tags TEXT[] NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+); 
