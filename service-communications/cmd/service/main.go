@@ -10,6 +10,7 @@ import (
 	"github.com/aimustaev/service-communications/internal/adapter/telegram"
 	"github.com/aimustaev/service-communications/internal/config"
 	"github.com/aimustaev/service-communications/internal/db"
+	"github.com/aimustaev/service-communications/internal/gateway"
 	"github.com/aimustaev/service-communications/internal/service"
 	"github.com/aimustaev/service-communications/pkg/logger"
 )
@@ -32,13 +33,20 @@ func main() {
 	}
 	defer database.Close()
 
+	// Initialize gateway client
+	gatewayClient, err := gateway.NewClient(cfg.GetGatewayAddress())
+	if err != nil {
+		log.Fatalf("Failed to create gateway client: %v", err)
+	}
+	defer gatewayClient.Close()
+
 	// Initialize adapters
 	mailhogAdapter := mailhog.NewMailhogAdapter(cfg.MailhogHost, cfg.MailhogPort, log, database)
 	telegramAdapter := telegram.NewTelegramAdapter(cfg.TelegramBotToken, cfg.TelegramChatID, log, database)
 
 	// Create services for each adapter
-	mailhogService := service.NewService(mailhogAdapter, log)
-	telegramService := service.NewService(telegramAdapter, log)
+	mailhogService := service.NewService(mailhogAdapter, log, gatewayClient)
+	telegramService := service.NewService(telegramAdapter, log, gatewayClient)
 
 	// Create context that will be canceled on SIGINT or SIGTERM
 	ctx, cancel := context.WithCancel(context.Background())

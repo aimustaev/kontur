@@ -28,16 +28,6 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "200m"
-        readinessProbe:
-          grpc:
-            port: 50051
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          grpc:
-            port: 50051
-          initialDelaySeconds: 15
-          periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service

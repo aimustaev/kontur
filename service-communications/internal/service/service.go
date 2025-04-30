@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/aimustaev/service-communications/internal/adapter"
+	"github.com/aimustaev/service-communications/internal/gateway"
 )
 
 // Service represents the main service for processing messages
@@ -15,13 +16,15 @@ type Service struct {
 	adapter adapter.Adapter
 	logger  *logrus.Logger
 	server  *http.Server
+	gateway *gateway.Client
 }
 
 // NewService creates a new service instance
-func NewService(adapter adapter.Adapter, logger *logrus.Logger) *Service {
+func NewService(adapter adapter.Adapter, logger *logrus.Logger, gatewayClient *gateway.Client) *Service {
 	return &Service{
 		adapter: adapter,
 		logger:  logger,
+		gateway: gatewayClient,
 	}
 }
 
@@ -87,6 +90,12 @@ func (s *Service) processMessages(ctx context.Context) error {
 		s.logger.Infof("Subject: %s", msg.Subject)
 		s.logger.Infof("Body: %s", msg.Body)
 		s.logger.Info("---")
+
+		// Отправляем сообщение в gateway сервис
+		if err := s.gateway.SendMessage(ctx, msg.ID, msg.Body, msg.From); err != nil {
+			s.logger.Errorf("Failed to send message to gateway: %v", err)
+			continue
+		}
 
 		if err := s.adapter.MarkAsProcessed(ctx, msg.ID); err != nil {
 			s.logger.Errorf("Failed to mark message as processed: %v", err)

@@ -28,6 +28,10 @@ spec:
           image: airat139/mail-poller:latest
           imagePullPolicy: Always
           env:
+            - name: GATEWAY_HOST
+              value: service-gateway
+            - name: GATEWAY_PORT
+              value: "50051"
             - name: MAILHOG_HOST
               value: mailhog
             - name: MAILHOG_PORT

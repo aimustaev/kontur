@@ -16,7 +16,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o mail-poller ./cmd/service
+RUN CGO_ENABLED=0 GOOS=linux go build -o service-gateway main.go
 
 # Final stage
 FROM alpine:latest
@@ -24,7 +24,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the binary from builder
-COPY --from=builder /app/mail-poller .
+COPY --from=builder /app/service-gateway .
 
 # Run the application
-CMD ["./mail-poller"] 
+CMD ["./service-gateway"] 

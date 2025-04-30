@@ -23,6 +23,10 @@ type Config struct {
 	PostgresPass string `envconfig:"POSTGRES_PASSWORD"`
 	PostgresDB   string `envconfig:"POSTGRES_DB" default:"service_communications"`
 
+	// Gateway configuration
+	GatewayHost string `envconfig:"GATEWAY_HOST" default:"service-gateway"`
+	GatewayPort int    `envconfig:"GATEWAY_PORT" default:"50051"`
+
 	// Logging configuration
 	LogLevel string `envconfig:"LOG_LEVEL" default:"info"`
 }
@@ -45,4 +49,9 @@ func (c *Config) GetDSN() string {
 		c.PostgresPort,
 		c.PostgresDB,
 	)
+}
+
+// GetGatewayAddress returns the full gateway address
+func (c *Config) GetGatewayAddress() string {
+	return fmt.Sprintf("%s:%d", c.GatewayHost, c.GatewayPort)
 }

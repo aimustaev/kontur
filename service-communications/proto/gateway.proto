@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package gateway;
+
+option go_package = "github.com/aimustaev/service-communications/internal/generated";
+
+service GatewayService {
+  rpc HandleNewMessage(NewMessageRequest) returns (stream NewMessageResponse) {}
+}
+
+message NewMessageRequest {
+  string message_id = 1;
+  string content = 2;
+  string sender = 3; 
+  int64 timestamp = 4;
+}
+
+message NewMessageResponse {
+  string status = 1;
+  string message = 2;
+} 

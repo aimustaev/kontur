@@ -3,12 +3,18 @@ package telegram
 import (
 	"context"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aimustaev/service-communications/internal/adapter"
 )
+
+type Problem struct {
+	children []Problem
+	id       int64
+	label    string
+}
 
 // TelegramAdapter implements the Adapter interface for Telegram
 type TelegramAdapter struct {
@@ -51,47 +57,84 @@ func (a *TelegramAdapter) Disconnect(ctx context.Context) error {
 
 // GetMessages retrieves messages from Telegram
 func (a *TelegramAdapter) GetMessages(ctx context.Context) ([]adapter.Message, error) {
+
 	if a.bot == nil {
 		return nil, fmt.Errorf("bot not initialized")
 	}
 
 	updateConfig := tgbotapi.NewUpdate(int(a.lastUpdateID))
 	updates, err := a.bot.GetUpdates(updateConfig)
+	problems := a.getProblems()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get updates: %w", err)
 	}
 
 	var messages []adapter.Message
 	for _, update := range updates {
-		if update.Message == nil {
+		if update.Message == nil && update.CallbackQuery == nil {
 			continue
 		}
+		if update.Message != nil {
+			message := adapter.Message{
+				ID:      fmt.Sprintf("%d", update.Message.MessageID),
+				From:    update.Message.From.UserName,
+				To:      a.bot.Self.UserName,
+				Subject: "Telegram Message",
+				Body:    update.Message.Text,
+				Tags:    []string{"telegram"},
+				Channel: "telegram",
+			}
 
-		// Skip messages from other chats
-		if update.Message.Chat.ID != a.getChatID() {
-			continue
+			messages = append(messages, message)
+
+			if err := a.db.SaveEmail(ctx, message); err != nil {
+				a.logger.Errorf("Failed to save email %s to database: %v", message.ID, err)
+			}
+		}
+		problemId := int64(-1)
+		if update.Message != nil && update.Message.Text == "100500" {
+			problemId = 0
+		} else if update.CallbackQuery != nil {
+			fmt.Sscanf(update.CallbackQuery.Data, "%d", &problemId)
 		}
 
-		message := adapter.Message{
-			ID:      fmt.Sprintf("%d", update.Message.MessageID),
-			From:    update.Message.From.UserName,
-			To:      a.bot.Self.UserName,
-			Subject: "Telegram Message",
-			Body:    update.Message.Text,
-			Tags:    []string{"telegram"},
-			Channel: "telegram",
-		}
-
-		messages = append(messages, message)
-
-		if err := a.db.SaveEmail(ctx, message); err != nil {
-			a.logger.Errorf("Failed to save email %s to database: %v", message.ID, err)
+		if problemId != -1 {
+			root, ok := problems[problemId]
+			if !ok {
+				a.logger.Errorf("not found problems")
+			}
+			err := a.SendButtons(root)
+			if err != nil {
+				a.logger.Errorf("failed to send buttons: %v", err)
+			}
 		}
 
 		a.lastUpdateID = int64(update.UpdateID) + 1
 	}
 
 	return messages, nil
+}
+
+func (a *TelegramAdapter) SendButtons(problems []Problem) error {
+	var buttons []tgbotapi.InlineKeyboardButton
+	if len(problems) == 0 {
+		msg := tgbotapi.NewMessage(a.getChatID(), "Это конец")
+		a.bot.Send(msg)
+		return nil
+	}
+
+	for _, problem := range problems {
+		buttons = append(buttons, tgbotapi.NewInlineKeyboardButtonData(problem.label, fmt.Sprintf("%d", problem.id)))
+	}
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(buttons)
+	msg := tgbotapi.NewMessage(a.getChatID(), "Выберите действие:")
+	msg.ReplyMarkup = keyboard
+	_, err := a.bot.Send(msg)
+	if err != nil {
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+
+	return nil
 }
 
 // MarkAsProcessed marks a message as processed

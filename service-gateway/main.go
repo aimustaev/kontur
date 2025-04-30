@@ -3,9 +3,11 @@ package main
 import (
 	"log"
 	"net"
+	"time"
+
+	"google.golang.org/grpc"
 
 	generated "github.com/aimustaev/service-gateway/internal/generated/proto"
-	"google.golang.org/grpc"
 )
 
 type GatewayServer struct {
@@ -19,6 +21,30 @@ func (s *GatewayServer) HandleNewMessage(req *generated.NewMessageRequest, strea
 	response := &generated.NewMessageResponse{
 		Status:  "success",
 		Message: "Message received successfully",
+	}
+
+	if err := stream.Send(response); err != nil {
+		log.Printf("Error sending response: %v", err)
+		return err
+	}
+
+	// Send processing status
+	time.Sleep(time.Second)
+	response = &generated.NewMessageResponse{
+		Status:  "processing",
+		Message: "Message is being processed",
+	}
+
+	if err := stream.Send(response); err != nil {
+		log.Printf("Error sending response: %v", err)
+		return err
+	}
+
+	// Send final status
+	time.Sleep(time.Second)
+	response = &generated.NewMessageResponse{
+		Status:  "completed",
+		Message: "Message processing completed",
 	}
 
 	if err := stream.Send(response); err != nil {
