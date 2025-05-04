@@ -11,6 +11,6 @@ spec:
     image: alpine/socat
     args:
     - tcp-listen:7233,fork,reuseaddr
-    - tcp-connect:192.168.1.96:7233
+    - tcp-connect:host.docker.internal:7233
     ports:
     - containerPort: 7233 

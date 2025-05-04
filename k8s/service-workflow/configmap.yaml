@@ -5,7 +5,6 @@ metadata:
   name: workflow-config
   namespace: default
 data:
-  # Используем прямой IP-адрес для доступа к локальному Temporal
-  TEMPORAL_ADDRESS: "temporal-proxy.temporal.svc.cluster.local:7233"
+  TEMPORAL_ADDRESS: "host.docker.internal:7233"
   PORT: "3000"
   
