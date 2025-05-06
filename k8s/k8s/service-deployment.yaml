@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-workflow-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-workflow-service
+  template:
+    metadata:
+      labels:
+        app: service-workflow-service
+    spec:
+      containers:
+      - name: service
+        image: airat139/service-workflow:latest
+        imagePullPolicy: Always
+        command: ["./service"]
+        ports:
+        - containerPort: 3002
+        envFrom:
+        - configMapRef:
+            name: service-workflow-config
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 15
+          periodSeconds: 20 

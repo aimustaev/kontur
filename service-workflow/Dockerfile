@@ -1,20 +1,33 @@
-FROM node:18
+# Build stage
+FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-# Установка зависимостей
-COPY package*.json ./
-RUN npm install
+# Copy go mod and sum files
+COPY go.mod go.sum ./
 
-# Копирование исходного кода
+# Download dependencies
+RUN go mod download
+
+# Copy source code
 COPY . .
 
-EXPOSE 3000
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -o service ./cmd/service
+RUN CGO_ENABLED=0 GOOS=linux go build -o worker ./cmd/worker
 
-# Используем entrypoint.sh для выбора режима запуска
-COPY entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+# Final stage
+FROM alpine:latest
 
-# По умолчанию запускаем API сервер
-CMD ["api"] 
+WORKDIR /app
+
+# Copy binaries from builder
+COPY --from=builder /app/service /app/service
+COPY --from=builder /app/worker /app/worker
+
+# Run as non-root user
+RUN adduser -D -g '' appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# The application will be started with the appropriate command in the deployment 

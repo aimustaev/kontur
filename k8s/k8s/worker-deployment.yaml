@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-workflow-worker
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-workflow-worker
+  template:
+    metadata:
+      labels:
+        app: service-workflow-worker
+    spec:
+      containers:
+      - name: worker
+        image: airat139/service-workflow:latest
+        imagePullPolicy: Always
+        command: ["/app/worker"]
+        envFrom:
+        - configMapRef:
+            name: service-workflow-config
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi" 

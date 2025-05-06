@@ -21,6 +21,11 @@ spec:
         ports:
         - containerPort: 50051
           name: grpc
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka:9092"
+        - name: KAFKA_TOPIC_WORKFLOW
+          value: "workflow-events"
         resources:
           requests:
             memory: "128Mi"
