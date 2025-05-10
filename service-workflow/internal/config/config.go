@@ -11,6 +11,7 @@ import (
 type Config struct {
 	HTTP     HTTPConfig
 	Temporal TemporalConfig
+	Kafka    KafkaConfig
 }
 
 // HTTPConfig holds HTTP server configuration
@@ -24,6 +25,13 @@ type TemporalConfig struct {
 	Host      string
 	Port      string
 	Namespace string
+}
+
+// KafkaConfig holds Kafka configuration
+type KafkaConfig struct {
+	Brokers []string
+	GroupID string
+	Topic   string
 }
 
 // Load loads configuration from environment variables
@@ -42,6 +50,11 @@ func Load() *Config {
 			Host:      getEnv("TEMPORAL_HOST", "localhost"),
 			Port:      getEnv("TEMPORAL_PORT", "7233"),
 			Namespace: getEnv("TEMPORAL_NAMESPACE", "default"),
+		},
+		Kafka: KafkaConfig{
+			Brokers: []string{getEnv("KAFKA_BROKERS", "kafka:9092")},
+			GroupID: getEnv("KAFKA_GROUP_ID", "service-workflow-group"),
+			Topic:   getEnv("KAFKA_TOPIC", "workflow-topic"),
 		},
 	}
 }

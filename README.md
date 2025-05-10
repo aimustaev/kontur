@@ -76,3 +76,9 @@
     - 3.4. гетвей - `kubectl apply -f k8s/service-communications.yaml`
     - 3.5. воркфлоу -  `kubectl apply -f k8s/service-workflow`
         - тут у нас у под капотом и api и worker которые обращаются к локальному темпоралу
+    - 3.6. кафка - `kubectl apply -f k8s/kafka.yaml`. Тут важно учесть, что такой конфиг валидно работает для кубер окружения. В случае если хочется работать с кафкой локально нужно поправить конфиг так (возможно есть более разумное решение, но быстрого варианта не придумал):
+    ```yaml
+        - name: KAFKA_CFG_ADVERTISED_LISTENERS
+        value: "PLAINTEXT://kafka:9092"     #так будет работать для кубера
+        value: "PLAINTEXT://localhost:9092" #так будет работать для локали
+    ```

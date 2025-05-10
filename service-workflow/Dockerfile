@@ -15,6 +15,7 @@ COPY . .
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -o service ./cmd/service
 RUN CGO_ENABLED=0 GOOS=linux go build -o worker ./cmd/worker
+RUN CGO_ENABLED=0 GOOS=linux go build -o consumer ./cmd/consumer
 
 # Final stage
 FROM alpine:latest
@@ -24,6 +25,7 @@ WORKDIR /app
 # Copy binaries from builder
 COPY --from=builder /app/service /app/service
 COPY --from=builder /app/worker /app/worker
+COPY --from=builder /app/consumer /app/consumer
 
 # Run as non-root user
 RUN adduser -D -g '' appuser
