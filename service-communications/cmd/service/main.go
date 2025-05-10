@@ -11,6 +11,7 @@ import (
 	"github.com/aimustaev/service-communications/internal/config"
 	"github.com/aimustaev/service-communications/internal/db"
 	"github.com/aimustaev/service-communications/internal/gateway"
+	"github.com/aimustaev/service-communications/internal/kafka"
 	"github.com/aimustaev/service-communications/internal/service"
 	"github.com/aimustaev/service-communications/pkg/logger"
 )
@@ -40,13 +41,20 @@ func main() {
 	}
 	defer gatewayClient.Close()
 
+	// Initialize Kafka producer
+	producer, err := kafka.NewProducer([]string{cfg.KafkaBrokers}, cfg.KafkaTopic, log)
+	if err != nil {
+		log.Fatalf("Failed to create Kafka producer: %v", err)
+	}
+	defer producer.Close()
+
 	// Initialize adapters
 	mailhogAdapter := mailhog.NewMailhogAdapter(cfg.MailhogHost, cfg.MailhogPort, log, database)
 	telegramAdapter := telegram.NewTelegramAdapter(cfg.TelegramBotToken, cfg.TelegramChatID, log, database)
 
 	// Create services for each adapter
-	mailhogService := service.NewService(mailhogAdapter, log, gatewayClient)
-	telegramService := service.NewService(telegramAdapter, log, gatewayClient)
+	mailhogService := service.NewService(mailhogAdapter, log, gatewayClient, producer)
+	telegramService := service.NewService(telegramAdapter, log, gatewayClient, producer)
 
 	// Create context that will be canceled on SIGINT or SIGTERM
 	ctx, cancel := context.WithCancel(context.Background())

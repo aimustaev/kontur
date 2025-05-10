@@ -9,22 +9,25 @@ import (
 
 	"github.com/aimustaev/service-communications/internal/adapter"
 	"github.com/aimustaev/service-communications/internal/gateway"
+	"github.com/aimustaev/service-communications/internal/kafka"
 )
 
 // Service represents the main service for processing messages
 type Service struct {
-	adapter adapter.Adapter
-	logger  *logrus.Logger
-	server  *http.Server
-	gateway *gateway.Client
+	adapter  adapter.Adapter
+	logger   *logrus.Logger
+	server   *http.Server
+	gateway  *gateway.Client
+	producer *kafka.Producer
 }
 
 // NewService creates a new service instance
-func NewService(adapter adapter.Adapter, logger *logrus.Logger, gatewayClient *gateway.Client) *Service {
+func NewService(adapter adapter.Adapter, logger *logrus.Logger, gatewayClient *gateway.Client, producer *kafka.Producer) *Service {
 	return &Service{
-		adapter: adapter,
-		logger:  logger,
-		gateway: gatewayClient,
+		adapter:  adapter,
+		logger:   logger,
+		gateway:  gatewayClient,
+		producer: producer,
 	}
 }
 
@@ -91,11 +94,17 @@ func (s *Service) processMessages(ctx context.Context) error {
 		s.logger.Infof("Body: %s", msg.Body)
 		s.logger.Info("---")
 
-		// Отправляем сообщение в gateway сервис
-		if err := s.gateway.SendMessage(ctx, msg.ID, msg.Body, msg.From); err != nil {
-			s.logger.Errorf("Failed to send message to gateway: %v", err)
+		// Send message to Kafka
+		if err := s.producer.SendMessage(ctx, msg); err != nil {
+			s.logger.Errorf("Failed to send message to Kafka: %v", err)
 			continue
 		}
+
+		//// Отправляем сообщение в gateway сервис
+		//if err := s.gateway.SendMessage(ctx, msg.ID, msg.Body, msg.From); err != nil {
+		//	s.logger.Errorf("Failed to send message to gateway: %v", err)
+		//	continue
+		//}
 
 		if err := s.adapter.MarkAsProcessed(ctx, msg.ID); err != nil {
 			s.logger.Errorf("Failed to mark message as processed: %v", err)

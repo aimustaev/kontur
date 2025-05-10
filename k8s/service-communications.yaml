@@ -25,9 +25,13 @@ spec:
     spec:
       containers:
         - name: service-communications
-          image: airat139/mail-poller:latest
+          image: airat139/mail-poller:4
           imagePullPolicy: Always
           env:
+            - name: KAFKA_BROKERS
+              value: "kafka:9092"
+            - name: KAFKA_TOPIC
+              value: "workflow-events"
             - name: GATEWAY_HOST
               value: service-gateway
             - name: GATEWAY_PORT
@@ -59,8 +63,8 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret
                   key: POSTGRES_PASSWORD
+                  name: postgres-secret
           resources:
             requests:
               memory: "128Mi"

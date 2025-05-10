@@ -9,3 +9,6 @@ data:
   TEMPORAL_HOST: "host.docker.internal"
   TEMPORAL_PORT: "7233"
   TEMPORAL_NAMESPACE: "default" 
+  KAFKA_BROKERS: "kafka:9092"
+  KAFKA_TOPIC_WORKFLOW: "workflow-events"
+  

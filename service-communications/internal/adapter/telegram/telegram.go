@@ -64,7 +64,6 @@ func (a *TelegramAdapter) GetMessages(ctx context.Context) ([]adapter.Message, e
 
 	updateConfig := tgbotapi.NewUpdate(int(a.lastUpdateID))
 	updates, err := a.bot.GetUpdates(updateConfig)
-	problems := a.getProblems()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get updates: %w", err)
 	}
@@ -89,23 +88,6 @@ func (a *TelegramAdapter) GetMessages(ctx context.Context) ([]adapter.Message, e
 
 			if err := a.db.SaveEmail(ctx, message); err != nil {
 				a.logger.Errorf("Failed to save email %s to database: %v", message.ID, err)
-			}
-		}
-		problemId := int64(-1)
-		if update.Message != nil && update.Message.Text == "100500" {
-			problemId = 0
-		} else if update.CallbackQuery != nil {
-			fmt.Sscanf(update.CallbackQuery.Data, "%d", &problemId)
-		}
-
-		if problemId != -1 {
-			root, ok := problems[problemId]
-			if !ok {
-				a.logger.Errorf("not found problems")
-			}
-			err := a.SendButtons(root)
-			if err != nil {
-				a.logger.Errorf("failed to send buttons: %v", err)
 			}
 		}
 

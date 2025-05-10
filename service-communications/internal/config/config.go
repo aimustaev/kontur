@@ -27,6 +27,12 @@ type Config struct {
 	GatewayHost string `envconfig:"GATEWAY_HOST" default:"service-gateway"`
 	GatewayPort int    `envconfig:"GATEWAY_PORT" default:"50051"`
 
+	// Kafka configuration
+	KafkaServiceHost string `envconfig:"KAFKA_SERVICE_HOST" default:"127.0.0.1"`
+	KafkaServicePort int    `envconfig:"KAFKA_SERVICE_PORT" default:"9092"`
+	KafkaTopic       string `envconfig:"KAFKA_TOPIC" default:"workflow-events"`
+	KafkaBrokers     string `envconfig:"KAFKA_BROKERS" default:"kafka:9092"`
+
 	// Logging configuration
 	LogLevel string `envconfig:"LOG_LEVEL" default:"info"`
 }

@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 
 # Create message
 msg = MIMEMultipart()
-msg['From'] = 'tes1t@example.am'
+msg['From'] = 'ai1@example.am'
 msg['To'] = 'support@example.am'
 msg['Subject'] = 'Test Email from Python'
 
