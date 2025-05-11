@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package ticket;
+
+option go_package = "github.com/aimustaev/service-tickets/internal/generated/proto";
+
+service TicketService {
+  // Create a new ticket
+  rpc CreateTicket(CreateTicketRequest) returns (TicketResponse) {}
+  
+  // Get ticket by ID
+  rpc GetTicket(GetTicketRequest) returns (TicketResponse) {}
+  
+  // Update existing ticket
+  rpc UpdateTicket(UpdateTicketRequest) returns (TicketResponse) {}
+  
+  // Delete ticket
+  rpc DeleteTicket(DeleteTicketRequest) returns (DeleteTicketResponse) {}
+}
+
+// Request to create a new ticket
+message CreateTicketRequest {
+  string vertical_id = 1;
+  string user_id = 2;
+  string assign = 3;
+  string skill_id = 4;
+}
+
+// Request to get a ticket
+message GetTicketRequest {
+  string id = 1;
+}
+
+// Request to update a ticket
+message UpdateTicketRequest {
+  string id = 1;
+  string vertical_id = 2;
+  string user_id = 3;
+  string assign = 4;
+  string skill_id = 5;
+}
+
+// Request to delete a ticket
+message DeleteTicketRequest {
+  string id = 1;
+}
+
+// Response containing ticket data
+message TicketResponse {
+  string id = 1;
+  string vertical_id = 2;
+  string user_id = 3;
+  string assign = 4;
+  string skill_id = 5;
+  string created_at = 6;
+  string updated_at = 7;
+}
+
+// Response for delete operation
+message DeleteTicketResponse {
+  bool success = 1;
+}

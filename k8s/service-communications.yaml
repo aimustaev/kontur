@@ -59,7 +59,7 @@ spec:
             - name: POSTGRES_USER
               value: postgres
             - name: POSTGRES_DB
-              value: service_communications
+              value: service_tickets
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

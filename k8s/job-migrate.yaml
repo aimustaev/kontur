@@ -20,7 +20,7 @@ spec:
             - name: POSTGRES_USER
               value: postgres
             - name: POSTGRES_DB
-              value: service_communications
+              value: service_tickets
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -41,19 +41,21 @@ kind: ConfigMap
 metadata:
   name: migrations-config
 data:
-  "000001_init_schema.up.sql": |
-    CREATE TABLE IF NOT EXISTS emails (
-        id TEXT PRIMARY KEY,
-        from_address TEXT NOT NULL,
-        to_address TEXT NOT NULL,
-        subject TEXT NOT NULL,
-        body TEXT NOT NULL,
-        tags TEXT[] NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  "000001_create_tickets_table.up.sql": |
+    CREATE TABLE IF NOT EXISTS tickets (
+        id VARCHAR(36) PRIMARY KEY,
+        vertical_id VARCHAR(36) NOT NULL,
+        user_id VARCHAR(36) NOT NULL,
+        assign VARCHAR(36),
+        skill_id VARCHAR(36),
+        created_at TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP NOT NULL
     );
-  "000001_init_schema.down.sql": |
-    DROP TABLE IF EXISTS emails;
-  "000002_add_channel_column.up.sql": |
-    ALTER TABLE emails ADD COLUMN channel VARCHAR(50) NOT NULL DEFAULT 'email';
-  "000002_add_channel_column.down.sql": |
-    ALTER TABLE emails DROP COLUMN channel; 
+
+    -- Add indexes for frequently queried fields
+    CREATE INDEX IF NOT EXISTS idx_tickets_vertical_id ON tickets(vertical_id);
+    CREATE INDEX IF NOT EXISTS idx_tickets_user_id ON tickets(user_id);
+    CREATE INDEX IF NOT EXISTS idx_tickets_assign ON tickets(assign);
+    CREATE INDEX IF NOT EXISTS idx_tickets_created_at ON tickets(created_at);
+  "000001_create_tickets_table.down.sql": |
+    DROP TABLE IF EXISTS tickets; 

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"log"
 )
 
@@ -17,21 +18,28 @@ type Message struct {
 
 // MessageHandler represents a usecase for handling Kafka messages
 type MessageHandler struct {
+	startWorkflowUC StartWorkflowUseCase
 	// Add any dependencies here if needed
 	// For example: repository, service clients, etc.
 }
 
 // NewMessageHandler creates a new message handler usecase
-func NewMessageHandler() *MessageHandler {
-	return &MessageHandler{}
+func NewMessageHandler(startWorkflowUC *StartWorkflowUseCase) *MessageHandler {
+	return &MessageHandler{
+		startWorkflowUC: *startWorkflowUC,
+	}
 }
 
 // HandleMessage processes a message
-func (h *MessageHandler) HandleMessage(msg Message) error {
+func (h *MessageHandler) HandleMessage(ctx context.Context, msg Message) error {
 	// Log the received message
 	log.Printf("Processing message: ID=%s, From=%s, To=%s, Channel=%s, %s",
 		msg.ID, msg.From, msg.To, msg.Channel, msg.Body)
 
+	// Start workflow
+	h.startWorkflowUC.Execute(ctx, StartWorkflowInput{
+		Message: msg.Body,
+	})
 	// Here you can add your business logic for processing the message
 	// For example:
 	// - Validate the message data

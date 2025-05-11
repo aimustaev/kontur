@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: service-gateway
+  name: service-tickets
   labels:
-    app: service-gateway
+    app: service-tickets
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: service-gateway
+      app: service-tickets
   template:
     metadata:
       labels:
-        app: service-gateway
+        app: service-tickets
     spec:
       containers:
-      - name: service-gateway
-        image: airat139/service-gateway:latest
+      - name: service-tickets
+        image: airat139/service-tickets:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 50051
@@ -26,6 +26,19 @@ spec:
           value: "kafka:9092"
         - name: KAFKA_TOPIC
           value: "workflow-events"
+        - name: POSTGRES_HOST
+          value: postgres
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_DB
+          value: service_tickets
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_PASSWORD
+              name: postgres-secret
         resources:
           requests:
             memory: "128Mi"
@@ -37,10 +50,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: service-gateway
+  name: service-tickets
 spec:
   selector:
-    app: service-gateway
+    app: service-tickets
   ports:
   - port: 50051
     targetPort: 50051

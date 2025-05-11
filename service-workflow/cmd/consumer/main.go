@@ -12,6 +12,7 @@ import (
 
 	"github.com/aimustaev/service-workflow/internal/config"
 	"github.com/aimustaev/service-workflow/internal/kafka"
+	"github.com/aimustaev/service-workflow/internal/temporal"
 	"github.com/aimustaev/service-workflow/internal/usecase"
 )
 
@@ -19,8 +20,24 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
+	// Create Temporal client configuration
+	temporalConfig := temporal.DefaultConfig()
+	temporalConfig.HostPort = cfg.GetTemporalAddr()
+	temporalConfig.Namespace = cfg.Temporal.Namespace
+
+	// Create Temporal client
+	temporalClient, err := temporal.NewClient(temporalConfig)
+	if err != nil {
+		log.Fatalln("Unable to create Temporal client", err)
+	}
+	defer temporalClient.Close()
+	log.Println("Temporal client initialized successfully")
+
+	// Create usecases
+	startWorkflowUseCase := usecase.NewStartWorkflowUseCase(temporalClient.GetClient())
+
 	// Create message handler
-	messageHandler := usecase.NewMessageHandler()
+	messageHandler := usecase.NewMessageHandler(startWorkflowUseCase)
 
 	// Create Kafka client
 	kafkaClient, err := kafka.NewClient(cfg)
@@ -48,7 +65,7 @@ func main() {
 			}
 
 			// Handle the message
-			if err := messageHandler.HandleMessage(message); err != nil {
+			if err := messageHandler.HandleMessage(ctx, message); err != nil {
 				log.Printf("Error handling message: %v", err)
 			}
 		})

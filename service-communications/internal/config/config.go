@@ -21,7 +21,7 @@ type Config struct {
 	PostgresPort int    `envconfig:"POSTGRES_PORT" default:"5432"`
 	PostgresUser string `envconfig:"POSTGRES_USER" default:"postgres"`
 	PostgresPass string `envconfig:"POSTGRES_PASSWORD"`
-	PostgresDB   string `envconfig:"POSTGRES_DB" default:"service_communications"`
+	PostgresDB   string `envconfig:"POSTGRES_DB" default:"service_tickets"`
 
 	// Gateway configuration
 	GatewayHost string `envconfig:"GATEWAY_HOST" default:"service-gateway"`
