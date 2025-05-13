@@ -19,12 +19,18 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Initialize repository
-	repo, err := repository.NewPostgresTicketRepository(cfg.GetDSN())
+	// Initialize repositories
+	ticketRepo, err := repository.NewPostgresTicketRepository(cfg.GetDSN())
 	if err != nil {
-		log.Fatalf("Failed to create repository: %v", err)
+		log.Fatalf("Failed to create ticket repository: %v", err)
 	}
-	defer repo.Close()
+	defer ticketRepo.Close()
+
+	messageRepo, err := repository.NewPostgresMessageRepository(cfg.GetDSN())
+	if err != nil {
+		log.Fatalf("Failed to create message repository: %v", err)
+	}
+	defer messageRepo.Close()
 
 	// Create gRPC server
 	lis, err := net.Listen("tcp", ":50051")
@@ -33,7 +39,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	ticketService := service.NewTicketService(repo)
+	ticketService := service.NewTicketService(ticketRepo, messageRepo)
 	proto.RegisterTicketServiceServer(s, ticketService)
 
 	log.Printf("Server listening at %v", lis.Addr())

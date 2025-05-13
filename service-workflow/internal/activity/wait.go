@@ -8,14 +8,14 @@ import (
 )
 
 // ProcessMessageActivity обрабатывает входящее сообщение
-func ProcessMessageActivity(ctx context.Context, message string) error {
+func (a *Activity) ProcessMessageActivity(ctx context.Context, message string) error {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Обработка сообщения", "message", message)
 	return nil
 }
 
 // WaitActivity выполняет ожидание указанное количество секунд
-func WaitActivity(ctx context.Context, seconds int) error {
+func (a *Activity) WaitActivity(ctx context.Context, seconds int) error {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Начало ожидания", "seconds", seconds)
 	time.Sleep(time.Duration(seconds) * time.Second)

@@ -19,6 +19,7 @@ type WorkflowResult interface {
 type BaseWorkflowResult struct {
 	Success bool
 	Err     error
+	Data    interface{}
 }
 
 // IsSuccess returns true if the result is successful
@@ -40,9 +41,10 @@ func (r BaseWorkflowResult) Error() string {
 }
 
 // NewSuccessResult creates a new successful result
-func NewSuccessResult() BaseWorkflowResult {
+func NewSuccessResult(data interface{}) BaseWorkflowResult {
 	return BaseWorkflowResult{
 		Success: true,
+		Data:    data,
 	}
 }
 

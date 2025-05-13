@@ -62,3 +62,7 @@ func (c *Client) UpdateTicket(ctx context.Context, request *proto.UpdateTicketRe
 	}
 	return response, nil
 }
+
+func (c *Client) GetClient() proto.TicketServiceClient {
+	return c.client
+}

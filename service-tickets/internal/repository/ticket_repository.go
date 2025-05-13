@@ -19,4 +19,7 @@ type TicketRepository interface {
 
 	// Delete removes a ticket by its ID
 	Delete(ctx context.Context, id string) error
+
+	// GetActiveByUser retrieves all active tickets for a given user
+	GetActiveByUser(ctx context.Context, user string) ([]*model.Ticket, error)
 }

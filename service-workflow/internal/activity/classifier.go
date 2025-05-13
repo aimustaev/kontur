@@ -2,10 +2,9 @@ package activity
 
 import (
 	"context"
+	crand "crypto/rand"
 	"fmt"
-	"github.com/aimustaev/service-workflow/internal/ticket"
-	"math/rand"
-	"strconv"
+	"math/big"
 
 	"go.temporal.io/sdk/activity"
 
@@ -13,27 +12,39 @@ import (
 )
 
 // ClassifierAcitivity классифицирует
-func ClassifierAcitivity(ctx context.Context, request *proto.TicketResponse) (*proto.TicketResponse, error) {
+func (a *Activity) ClassifierAcitivity(ctx context.Context, request *proto.TicketResponse) (*proto.TicketResponse, error) {
 	logger := activity.GetLogger(ctx)
-	cfg := GetConfig()
-	if cfg == nil {
-		return nil, fmt.Errorf("config not found")
+
+	// Генерируем случайные числа для VerticalId и SkillId
+	verticalId, err := crand.Int(crand.Reader, big.NewInt(10))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate vertical id: %w", err)
+	}
+	skillId, err := crand.Int(crand.Reader, big.NewInt(10))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate skill id: %w", err)
 	}
 
-	client, err := ticket.NewClient(cfg)
+	problemId, err := crand.Int(crand.Reader, big.NewInt(10))
 	if err != nil {
-		logger.Error("Ошибка при создании клиента тикетов", "error", err)
-		return nil, fmt.Errorf("failed to create ticket client: %w", err)
+		return nil, fmt.Errorf("failed to generate problem id: %w", err)
 	}
-	defer client.Close()
+	userGroupId, err := crand.Int(crand.Reader, big.NewInt(10))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate user group id: %w", err)
+	}
 
 	// Создаем тикет
-	response, err := client.UpdateTicket(ctx, &proto.UpdateTicketRequest{
-		Id:         request.Id,
-		VerticalId: strconv.Itoa(rand.Intn(10)),
-		SkillId:    strconv.Itoa(rand.Intn(10)),
-		UserId:     request.UserId,
-		Assign:     request.Assign,
+	response, err := a.ticketClient.UpdateTicket(ctx, &proto.UpdateTicketRequest{
+		Id:          request.Id,
+		VerticalId:  verticalId.Int64(),
+		ProblemId:   problemId.Int64(),
+		SkillId:     skillId.Int64(),
+		UserGroupId: userGroupId.Int64(),
+		User:        request.User,
+		Agent:       request.Agent,
+		Status:      request.Status,
+		Channel:     request.Channel,
 	})
 	if err != nil {
 		logger.Error("Ошибка при обновлении тикета", "error", err)

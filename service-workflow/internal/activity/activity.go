@@ -1,32 +1,16 @@
 package activity
 
 import (
-	"context"
-
-	"github.com/aimustaev/service-workflow/internal/config"
+	"github.com/aimustaev/service-workflow/internal/generated/proto"
 )
 
-var globalConfig *config.Config
-
-// SetConfig sets the global configuration
-func SetConfig(cfg *config.Config) {
-	globalConfig = cfg
+// Client represents a ticket service client
+type Activity struct {
+	ticketClient proto.TicketServiceClient
 }
 
-// GetConfig returns the global configuration
-func GetConfig() *config.Config {
-	return globalConfig
-}
-
-// ContextWithConfig creates a new context with config
-func ContextWithConfig(cfg *config.Config) context.Context {
-	return context.WithValue(context.Background(), "config", cfg)
-}
-
-// GetConfigFromContext gets config from context
-func GetConfigFromContext(ctx context.Context) *config.Config {
-	if cfg, ok := ctx.Value("config").(*config.Config); ok {
-		return cfg
+func NewActivity(ticketClient proto.TicketServiceClient) *Activity {
+	return &Activity{
+		ticketClient: ticketClient,
 	}
-	return nil
 }

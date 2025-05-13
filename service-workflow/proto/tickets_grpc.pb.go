@@ -19,10 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TicketService_CreateTicket_FullMethodName = "/ticket.TicketService/CreateTicket"
-	TicketService_GetTicket_FullMethodName    = "/ticket.TicketService/GetTicket"
-	TicketService_UpdateTicket_FullMethodName = "/ticket.TicketService/UpdateTicket"
-	TicketService_DeleteTicket_FullMethodName = "/ticket.TicketService/DeleteTicket"
+	TicketService_CreateTicket_FullMethodName             = "/ticket.TicketService/CreateTicket"
+	TicketService_GetTicket_FullMethodName                = "/ticket.TicketService/GetTicket"
+	TicketService_UpdateTicket_FullMethodName             = "/ticket.TicketService/UpdateTicket"
+	TicketService_DeleteTicket_FullMethodName             = "/ticket.TicketService/DeleteTicket"
+	TicketService_GetActiveTicketsByUser_FullMethodName   = "/ticket.TicketService/GetActiveTicketsByUser"
+	TicketService_AddMessageToTicket_FullMethodName       = "/ticket.TicketService/AddMessageToTicket"
+	TicketService_AddMessageToActiveTicket_FullMethodName = "/ticket.TicketService/AddMessageToActiveTicket"
+	TicketService_GetTicketMessages_FullMethodName        = "/ticket.TicketService/GetTicketMessages"
 )
 
 // TicketServiceClient is the client API for TicketService service.
@@ -37,6 +41,14 @@ type TicketServiceClient interface {
 	UpdateTicket(ctx context.Context, in *UpdateTicketRequest, opts ...grpc.CallOption) (*TicketResponse, error)
 	// Delete ticket
 	DeleteTicket(ctx context.Context, in *DeleteTicketRequest, opts ...grpc.CallOption) (*DeleteTicketResponse, error)
+	// Get active tickets by user
+	GetActiveTicketsByUser(ctx context.Context, in *GetActiveTicketsByUserRequest, opts ...grpc.CallOption) (*GetActiveTicketsByUserResponse, error)
+	// Add message to ticket by ID
+	AddMessageToTicket(ctx context.Context, in *AddMessageToTicketRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	// Add message to active ticket by user
+	AddMessageToActiveTicket(ctx context.Context, in *AddMessageToActiveTicketRequest, opts ...grpc.CallOption) (*MessageResponse, error)
+	// Get messages for ticket
+	GetTicketMessages(ctx context.Context, in *GetTicketMessagesRequest, opts ...grpc.CallOption) (*GetTicketMessagesResponse, error)
 }
 
 type ticketServiceClient struct {
@@ -83,6 +95,42 @@ func (c *ticketServiceClient) DeleteTicket(ctx context.Context, in *DeleteTicket
 	return out, nil
 }
 
+func (c *ticketServiceClient) GetActiveTicketsByUser(ctx context.Context, in *GetActiveTicketsByUserRequest, opts ...grpc.CallOption) (*GetActiveTicketsByUserResponse, error) {
+	out := new(GetActiveTicketsByUserResponse)
+	err := c.cc.Invoke(ctx, TicketService_GetActiveTicketsByUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ticketServiceClient) AddMessageToTicket(ctx context.Context, in *AddMessageToTicketRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, TicketService_AddMessageToTicket_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ticketServiceClient) AddMessageToActiveTicket(ctx context.Context, in *AddMessageToActiveTicketRequest, opts ...grpc.CallOption) (*MessageResponse, error) {
+	out := new(MessageResponse)
+	err := c.cc.Invoke(ctx, TicketService_AddMessageToActiveTicket_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ticketServiceClient) GetTicketMessages(ctx context.Context, in *GetTicketMessagesRequest, opts ...grpc.CallOption) (*GetTicketMessagesResponse, error) {
+	out := new(GetTicketMessagesResponse)
+	err := c.cc.Invoke(ctx, TicketService_GetTicketMessages_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TicketServiceServer is the server API for TicketService service.
 // All implementations must embed UnimplementedTicketServiceServer
 // for forward compatibility
@@ -95,6 +143,14 @@ type TicketServiceServer interface {
 	UpdateTicket(context.Context, *UpdateTicketRequest) (*TicketResponse, error)
 	// Delete ticket
 	DeleteTicket(context.Context, *DeleteTicketRequest) (*DeleteTicketResponse, error)
+	// Get active tickets by user
+	GetActiveTicketsByUser(context.Context, *GetActiveTicketsByUserRequest) (*GetActiveTicketsByUserResponse, error)
+	// Add message to ticket by ID
+	AddMessageToTicket(context.Context, *AddMessageToTicketRequest) (*MessageResponse, error)
+	// Add message to active ticket by user
+	AddMessageToActiveTicket(context.Context, *AddMessageToActiveTicketRequest) (*MessageResponse, error)
+	// Get messages for ticket
+	GetTicketMessages(context.Context, *GetTicketMessagesRequest) (*GetTicketMessagesResponse, error)
 	mustEmbedUnimplementedTicketServiceServer()
 }
 
@@ -113,6 +169,18 @@ func (UnimplementedTicketServiceServer) UpdateTicket(context.Context, *UpdateTic
 }
 func (UnimplementedTicketServiceServer) DeleteTicket(context.Context, *DeleteTicketRequest) (*DeleteTicketResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTicket not implemented")
+}
+func (UnimplementedTicketServiceServer) GetActiveTicketsByUser(context.Context, *GetActiveTicketsByUserRequest) (*GetActiveTicketsByUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTicketsByUser not implemented")
+}
+func (UnimplementedTicketServiceServer) AddMessageToTicket(context.Context, *AddMessageToTicketRequest) (*MessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMessageToTicket not implemented")
+}
+func (UnimplementedTicketServiceServer) AddMessageToActiveTicket(context.Context, *AddMessageToActiveTicketRequest) (*MessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMessageToActiveTicket not implemented")
+}
+func (UnimplementedTicketServiceServer) GetTicketMessages(context.Context, *GetTicketMessagesRequest) (*GetTicketMessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTicketMessages not implemented")
 }
 func (UnimplementedTicketServiceServer) mustEmbedUnimplementedTicketServiceServer() {}
 
@@ -199,6 +267,78 @@ func _TicketService_DeleteTicket_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TicketService_GetActiveTicketsByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetActiveTicketsByUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).GetActiveTicketsByUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_GetActiveTicketsByUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).GetActiveTicketsByUser(ctx, req.(*GetActiveTicketsByUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TicketService_AddMessageToTicket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMessageToTicketRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).AddMessageToTicket(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_AddMessageToTicket_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).AddMessageToTicket(ctx, req.(*AddMessageToTicketRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TicketService_AddMessageToActiveTicket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMessageToActiveTicketRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).AddMessageToActiveTicket(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_AddMessageToActiveTicket_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).AddMessageToActiveTicket(ctx, req.(*AddMessageToActiveTicketRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TicketService_GetTicketMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTicketMessagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).GetTicketMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_GetTicketMessages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).GetTicketMessages(ctx, req.(*GetTicketMessagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TicketService_ServiceDesc is the grpc.ServiceDesc for TicketService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -221,6 +361,22 @@ var TicketService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTicket",
 			Handler:    _TicketService_DeleteTicket_Handler,
+		},
+		{
+			MethodName: "GetActiveTicketsByUser",
+			Handler:    _TicketService_GetActiveTicketsByUser_Handler,
+		},
+		{
+			MethodName: "AddMessageToTicket",
+			Handler:    _TicketService_AddMessageToTicket_Handler,
+		},
+		{
+			MethodName: "AddMessageToActiveTicket",
+			Handler:    _TicketService_AddMessageToActiveTicket_Handler,
+		},
+		{
+			MethodName: "GetTicketMessages",
+			Handler:    _TicketService_GetTicketMessages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
