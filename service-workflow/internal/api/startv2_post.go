@@ -9,7 +9,7 @@ import (
 	"github.com/aimustaev/service-workflow/internal/usecase"
 )
 
-type StartWorkflowRequest struct {
+type StartV2WorkflowRequest struct {
 	ID      string   `json:"id"`
 	From    string   `json:"from"`
 	To      string   `json:"to"`
@@ -19,27 +19,27 @@ type StartWorkflowRequest struct {
 	Channel string   `json:"channel"` // email, telegram
 }
 
-type StartWorkflowResponse struct {
+type StartV2WorkflowResponse struct {
 	WorkflowID string `json:"workflow_id"`
 }
 
-type StartWorkflowHandler struct {
-	startWorkflowUseCase *usecase.StartWorkflowUseCase
+type StartV2WorkflowHandler struct {
+	startWorkflowUseCase *usecase.StartV2WorkflowUseCase
 }
 
-func NewStartWorkflowHandler(startWorkflowUseCase *usecase.StartWorkflowUseCase) *StartWorkflowHandler {
-	return &StartWorkflowHandler{
+func NewStartV2WorkflowHandler(startWorkflowUseCase *usecase.StartV2WorkflowUseCase) *StartV2WorkflowHandler {
+	return &StartV2WorkflowHandler{
 		startWorkflowUseCase: startWorkflowUseCase,
 	}
 }
 
-func (h *StartWorkflowHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *StartV2WorkflowHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req StartWorkflowRequest
+	var req StartV2WorkflowRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return

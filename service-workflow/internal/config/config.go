@@ -12,6 +12,7 @@ type Config struct {
 	HTTP     HTTPConfig
 	Temporal TemporalConfig
 	Kafka    KafkaConfig
+	Ticket   TicketConfig
 }
 
 // HTTPConfig holds HTTP server configuration
@@ -32,6 +33,12 @@ type KafkaConfig struct {
 	Brokers []string
 	GroupID string
 	Topic   string
+}
+
+// TicketConfig holds ticket service configuration
+type TicketConfig struct {
+	Host string
+	Port string
 }
 
 // Load loads configuration from environment variables
@@ -56,6 +63,10 @@ func Load() *Config {
 			GroupID: getEnv("KAFKA_GROUP_ID", "service-workflow-group"),
 			Topic:   getEnv("KAFKA_TOPIC", "workflow-topic"),
 		},
+		Ticket: TicketConfig{
+			Host: getEnv("TICKET_SERVICE_HOST", "localhost"),
+			Port: getEnv("TICKET_SERVICE_PORT", "50051"),
+		},
 	}
 }
 
@@ -67,6 +78,11 @@ func (c *Config) GetHTTPAddr() string {
 // GetTemporalAddr returns the full Temporal address
 func (c *Config) GetTemporalAddr() string {
 	return c.Temporal.Host + ":" + c.Temporal.Port
+}
+
+// GetTicketServiceAddr returns the full ticket service address
+func (c *Config) GetTicketServiceAddr() string {
+	return c.Ticket.Host + ":" + c.Ticket.Port
 }
 
 // getEnv gets an environment variable or returns a default value

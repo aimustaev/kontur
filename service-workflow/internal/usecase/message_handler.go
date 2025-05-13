@@ -3,9 +3,10 @@ package usecase
 import (
 	"context"
 	"log"
+
+	"github.com/aimustaev/service-workflow/internal/model"
 )
 
-// Message represents the structure of a message
 type Message struct {
 	ID      string   `json:"id"`
 	From    string   `json:"from"`
@@ -13,40 +14,32 @@ type Message struct {
 	Subject string   `json:"subject"`
 	Body    string   `json:"body"`
 	Tags    []string `json:"tags"`
-	Channel string   `json:"channel"` // email, telegram
+	Channel string   `json:"channel"`
 }
 
-// MessageHandler represents a usecase for handling Kafka messages
 type MessageHandler struct {
 	startWorkflowUC StartWorkflowUseCase
-	// Add any dependencies here if needed
-	// For example: repository, service clients, etc.
 }
 
-// NewMessageHandler creates a new message handler usecase
 func NewMessageHandler(startWorkflowUC *StartWorkflowUseCase) *MessageHandler {
 	return &MessageHandler{
 		startWorkflowUC: *startWorkflowUC,
 	}
 }
 
-// HandleMessage processes a message
 func (h *MessageHandler) HandleMessage(ctx context.Context, msg Message) error {
-	// Log the received message
 	log.Printf("Processing message: ID=%s, From=%s, To=%s, Channel=%s, %s",
 		msg.ID, msg.From, msg.To, msg.Channel, msg.Body)
 
-	// Start workflow
-	h.startWorkflowUC.Execute(ctx, StartWorkflowInput{
-		Message: msg.Body,
+	h.startWorkflowUC.Execute(ctx, model.Message{
+		ID:      msg.ID,
+		From:    msg.From,
+		To:      msg.To,
+		Subject: msg.Subject,
+		Body:    msg.Body,
+		Tags:    msg.Tags,
+		Channel: msg.Channel,
 	})
-	// Here you can add your business logic for processing the message
-	// For example:
-	// - Validate the message data
-	// - Process based on channel type
-	// - Store in database
-	// - Call other services
-	// - etc.
 
 	return nil
 }

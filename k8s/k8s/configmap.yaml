@@ -11,4 +11,6 @@ data:
   TEMPORAL_NAMESPACE: "default" 
   KAFKA_BROKERS: "kafka:9092"
   KAFKA_TOPIC: "workflow-events"
+  TICKET_HOST: "service-tickets"
+  TICKET_PORT: "50051"
   

@@ -1,0 +1,14 @@
+# Исключаем лишние файлы и папки из docker build context
+.git
+.gitignore
+Dockerfile
+*.md
+*.env
+*.local
+*.log
+.idea
+.vscode
+node_modules
+__pycache__
+*.test
+*.swp 

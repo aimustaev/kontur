@@ -33,7 +33,7 @@ func main() {
 
 	// Register workflows
 	log.Println("Registering workflows...")
-	workflow.RegisterWorkflows(w)
+	workflow.RegisterWorkflows(w, cfg)
 
 	// Start worker
 	log.Println("Starting worker...")

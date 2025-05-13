@@ -20,10 +20,14 @@ service TicketService {
 
 // Request to create a new ticket
 message CreateTicketRequest {
-  string vertical_id = 1;
-  string user_id = 2;
-  string assign = 3;
-  string skill_id = 4;
+  string user = 1;
+  string agent = 2;
+  int64 problem_id = 3;
+  int64 vertical_id = 4;
+  int64 skill_id = 5;
+  int64 user_group_id = 6;
+  string channel = 7;
+  string status = 8;
 }
 
 // Request to get a ticket
@@ -34,10 +38,14 @@ message GetTicketRequest {
 // Request to update a ticket
 message UpdateTicketRequest {
   string id = 1;
-  string vertical_id = 2;
-  string user_id = 3;
-  string assign = 4;
-  string skill_id = 5;
+  string user = 2;
+  string agent = 3;
+  int64 problem_id = 4;
+  int64 vertical_id = 5;
+  int64 skill_id = 6;
+  int64 user_group_id = 7;
+  string channel = 8;
+  string status = 9;
 }
 
 // Request to delete a ticket
@@ -48,12 +56,16 @@ message DeleteTicketRequest {
 // Response containing ticket data
 message TicketResponse {
   string id = 1;
-  string vertical_id = 2;
-  string user_id = 3;
-  string assign = 4;
-  string skill_id = 5;
-  string created_at = 6;
-  string updated_at = 7;
+  string user = 2;
+  string agent = 3;
+  int64 problem_id = 4;
+  int64 vertical_id = 5;
+  int64 skill_id = 6;
+  int64 user_group_id = 7;
+  string channel = 8;
+  string status = 9;
+  string created_at = 10;
+  string updated_at = 11;
 }
 
 // Response for delete operation

@@ -7,39 +7,33 @@ import (
 
 	"go.temporal.io/sdk/client"
 
+	"github.com/aimustaev/service-workflow/internal/model"
 	"github.com/aimustaev/service-workflow/internal/workflow"
 )
 
-// StartWorkflowInput represents the input for starting a workflow
 type StartWorkflowInput struct {
-	Message string
+	Message model.Message
 }
 
-// StartWorkflowOutput represents the output of starting a workflow
 type StartWorkflowOutput struct {
 	WorkflowID string
 }
 
-// StartWorkflowUseCase handles the business logic for starting workflows
 type StartWorkflowUseCase struct {
 	temporalClient client.Client
 }
 
-// NewStartWorkflowUseCase creates a new StartWorkflowUseCase
 func NewStartWorkflowUseCase(temporalClient client.Client) *StartWorkflowUseCase {
 	return &StartWorkflowUseCase{
 		temporalClient: temporalClient,
 	}
 }
 
-// Execute starts a new workflow
-func (uc *StartWorkflowUseCase) Execute(ctx context.Context, input StartWorkflowInput) (*StartWorkflowOutput, error) {
-	// Create workflow input
+func (uc *StartWorkflowUseCase) Execute(ctx context.Context, message model.Message) (*StartWorkflowOutput, error) {
 	workflowInput := workflow.SimpleWorkflowInput{
-		Message: input.Message,
+		Message: message,
 	}
 
-	// Start workflow execution
 	workflowOptions := client.StartWorkflowOptions{
 		ID:        "workflow-ticket-" + time.Now().Format("20060102150405"),
 		TaskQueue: "workflow-ticket",

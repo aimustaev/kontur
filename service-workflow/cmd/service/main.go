@@ -29,12 +29,14 @@ func main() {
 
 	// Create usecases
 	startWorkflowUseCase := usecase.NewStartWorkflowUseCase(temporalClient.GetClient())
+	startV2WorkflowUseCase := usecase.NewStartV2WorkflowUseCase(temporalClient.GetClient())
 
 	// Create handlers
 	startHandler := api.NewStartWorkflowHandler(startWorkflowUseCase)
-
+	startV2Handler := api.NewStartV2WorkflowHandler(startV2WorkflowUseCase)
 	// Create HTTP server
 	http.HandleFunc("/start", startHandler.Handle)
+	http.HandleFunc("/startV2", startV2Handler.Handle)
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
