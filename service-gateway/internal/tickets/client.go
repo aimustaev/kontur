@@ -42,3 +42,9 @@ func (c *Client) GetTicketMessages(ctx context.Context, ticketID string) (*pb.Ge
 		TicketId: ticketID,
 	})
 }
+
+func (c *Client) GetTicket(ctx context.Context, ticketID string) (*pb.TicketResponse, error) {
+	return c.client.GetTicket(ctx, &pb.GetTicketRequest{
+		Id: ticketID,
+	})
+}

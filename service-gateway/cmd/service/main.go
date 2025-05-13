@@ -34,6 +34,7 @@ func main() {
 	// Настраиваем роутер
 	router := mux.NewRouter()
 	router.HandleFunc("/api/tickets", handler.GetAllTickets).Methods("GET")
+	router.HandleFunc("/api/ticket/{id}", handler.GetTicket).Methods("GET")
 	router.HandleFunc("/api/ticket/{id}/messages", handler.GetTicketMessages).Methods("GET")
 
 	// Получаем порт для HTTP сервера из переменных окружения или используем значение по умолчанию
