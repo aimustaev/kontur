@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package ticket;
+
+option go_package = "github.com/aimustaev/service-gateway/internal/generated/proto";
+
+service TicketService {
+  // Create a new ticket
+  rpc CreateTicket(CreateTicketRequest) returns (TicketResponse) {}
+  
+  // Get ticket by ID
+  rpc GetTicket(GetTicketRequest) returns (TicketResponse) {}
+  
+  // Update existing ticket
+  rpc UpdateTicket(UpdateTicketRequest) returns (TicketResponse) {}
+  
+  // Delete ticket
+  rpc DeleteTicket(DeleteTicketRequest) returns (DeleteTicketResponse) {}
+
+  // Get active tickets by user
+  rpc GetActiveTicketsByUser(GetActiveTicketsByUserRequest) returns (GetActiveTicketsByUserResponse) {}
+
+  // Add message to ticket by ID
+  rpc AddMessageToTicket(AddMessageToTicketRequest) returns (MessageResponse) {}
+
+  // Add message to active ticket by user
+  rpc AddMessageToActiveTicket(AddMessageToActiveTicketRequest) returns (MessageResponse) {}
+
+  // Get messages for ticket
+  rpc GetTicketMessages(GetTicketMessagesRequest) returns (GetTicketMessagesResponse) {}
+
+  // Get all tickets from database
+  rpc GetAllTickets(GetAllTicketsRequest) returns (GetAllTicketsResponse) {}
+}
+
+// Request to create a new ticket
+message CreateTicketRequest {
+  string user = 1;
+  string agent = 2;
+  int64 problem_id = 3;
+  int64 vertical_id = 4;
+  int64 skill_id = 5;
+  int64 user_group_id = 6;
+  string channel = 7;
+  string status = 8;
+}
+
+// Request to get a ticket
+message GetTicketRequest {
+  string id = 1;
+}
+
+// Request to update a ticket
+message UpdateTicketRequest {
+  string id = 1;
+  string user = 2;
+  string agent = 3;
+  int64 problem_id = 4;
+  int64 vertical_id = 5;
+  int64 skill_id = 6;
+  int64 user_group_id = 7;
+  string channel = 8;
+  string status = 9;
+}
+
+// Request to delete a ticket
+message DeleteTicketRequest {
+  string id = 1;
+}
+
+// Response containing ticket data
+message TicketResponse {
+  string id = 1;
+  string user = 2;
+  string agent = 3;
+  int64 problem_id = 4;
+  int64 vertical_id = 5;
+  int64 skill_id = 6;
+  int64 user_group_id = 7;
+  string channel = 8;
+  string status = 9;
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+// Response for delete operation
+message DeleteTicketResponse {
+  bool success = 1;
+}
+
+// Request to get active tickets by user
+message GetActiveTicketsByUserRequest {
+  string user = 1;
+}
+
+// Response containing list of active tickets
+message GetActiveTicketsByUserResponse {
+  repeated TicketResponse tickets = 1;
+}
+
+// Message represents a message in a ticket
+message Message {
+  string id = 1;
+  string ticket_id = 2;
+  string from_address = 3;
+  string to_address = 4;
+  string subject = 5;
+  string body = 6;
+  string channel = 7;
+  string created_at = 8;
+}
+
+// Request to add message to ticket
+message AddMessageToTicketRequest {
+  string ticket_id = 1;
+  string from_address = 2;
+  string to_address = 3;
+  string subject = 4;
+  string body = 5;
+  string channel = 6;
+}
+
+// Request to add message to active ticket by user
+message AddMessageToActiveTicketRequest {
+  string user = 1;
+  string from_address = 2;
+  string to_address = 3;
+  string subject = 4;
+  string body = 5;
+  string channel = 6;
+}
+
+// Request to get messages for ticket
+message GetTicketMessagesRequest {
+  string ticket_id = 1;
+}
+
+// Response containing list of messages
+message GetTicketMessagesResponse {
+  repeated Message messages = 1;
+}
+
+// Request to get all tickets
+message GetAllTicketsRequest {
+  // Empty request as we want to get all tickets
+}
+
+// Response containing list of all tickets
+message GetAllTicketsResponse {
+  repeated TicketResponse tickets = 1;
+}
+
+// Response containing single message
+message MessageResponse {
+  Message message = 1;
+}

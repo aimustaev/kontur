@@ -19,13 +19,16 @@ spec:
         image: airat139/service-gateway:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 50051
-          name: grpc
+        - containerPort: 8080
         env:
         - name: KAFKA_BROKERS
           value: "kafka:9092"
         - name: KAFKA_TOPIC
           value: "workflow-events"
+        - name: TICKET_SERVICE_HOST
+          value: service-tickets
+        - name: TICKET_SERVICE_PORT
+          value: "50051"
         resources:
           requests:
             memory: "128Mi"
@@ -42,7 +45,7 @@ spec:
   selector:
     app: service-gateway
   ports:
-  - port: 50051
-    targetPort: 50051
-    name: grpc
+  - port: 8080
+    targetPort: 8080
+    name: http
   type: ClusterIP 

@@ -2,44 +2,49 @@ package main
 
 import (
 	"log"
-	"net"
+	"net/http"
+	"os"
 
-	generated "github.com/aimustaev/service-gateway/internal/generated/proto"
-	"google.golang.org/grpc"
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+
+	httphandler "github.com/aimustaev/service-gateway/internal/http"
+	rpcClient "github.com/aimustaev/service-gateway/internal/tickets"
 )
 
-type GatewayServer struct {
-	generated.UnimplementedGatewayServiceServer
-}
-
-func (s *GatewayServer) HandleNewMessage(req *generated.NewMessageRequest, stream generated.GatewayService_HandleNewMessageServer) error {
-	log.Printf("Received message: %s from %s", req.Content, req.Sender)
-
-	// Send acknowledgment response
-	response := &generated.NewMessageResponse{
-		Status:  "success",
-		Message: "Message received successfully",
-	}
-
-	if err := stream.Send(response); err != nil {
-		log.Printf("Error sending response: %v", err)
-		return err
-	}
-
-	return nil
-}
-
 func main() {
-	lis, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+	// Загружаем переменные окружения из .env файла
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "development"
+	}
+	if err := godotenv.Load(".env." + env); err != nil {
+		log.Printf("Warning: .env.%s file not found: %v", env, err)
 	}
 
-	s := grpc.NewServer()
-	generated.RegisterGatewayServiceServer(s, &GatewayServer{})
+	// Создаем клиент для tickets сервиса
+	ticketsClient, err := rpcClient.NewClient()
+	if err != nil {
+		log.Fatalf("Failed to create tickets client: %v", err)
+	}
 
-	log.Printf("Server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	// Создаем HTTP хендлер
+	handler := httphandler.NewHandler(ticketsClient)
+
+	// Настраиваем роутер
+	router := mux.NewRouter()
+	router.HandleFunc("/api/tickets", handler.GetAllTickets).Methods("GET")
+	router.HandleFunc("/api/ticket/{id}/messages", handler.GetTicketMessages).Methods("GET")
+
+	// Получаем порт для HTTP сервера из переменных окружения или используем значение по умолчанию
+	httpPort := os.Getenv("HTTP_PORT")
+	if httpPort == "" {
+		httpPort = "8080"
+	}
+
+	// Запускаем HTTP сервер
+	log.Printf("Starting HTTP server on :%s", httpPort)
+	if err := http.ListenAndServe(":"+httpPort, router); err != nil {
+		log.Fatalf("Failed to serve HTTP: %v", err)
 	}
 }
