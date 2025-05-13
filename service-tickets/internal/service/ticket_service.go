@@ -217,6 +217,24 @@ func (s *TicketService) GetTicketMessages(ctx context.Context, req *proto.GetTic
 	return response, nil
 }
 
+// GetAllTickets implements the GetAllTickets RPC method
+func (s *TicketService) GetAllTickets(ctx context.Context, req *proto.GetAllTicketsRequest) (*proto.GetAllTicketsResponse, error) {
+	tickets, err := s.ticketRepo.GetAll(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get tickets")
+	}
+
+	response := &proto.GetAllTicketsResponse{
+		Tickets: make([]*proto.TicketResponse, len(tickets)),
+	}
+
+	for i, ticket := range tickets {
+		response.Tickets[i] = convertToProtoTicket(ticket)
+	}
+
+	return response, nil
+}
+
 // Helper function to convert model.Ticket to proto.TicketResponse
 func convertToProtoTicket(ticket *model.Ticket) *proto.TicketResponse {
 	resp := &proto.TicketResponse{

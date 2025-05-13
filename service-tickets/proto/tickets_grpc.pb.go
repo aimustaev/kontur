@@ -27,6 +27,7 @@ const (
 	TicketService_AddMessageToTicket_FullMethodName       = "/ticket.TicketService/AddMessageToTicket"
 	TicketService_AddMessageToActiveTicket_FullMethodName = "/ticket.TicketService/AddMessageToActiveTicket"
 	TicketService_GetTicketMessages_FullMethodName        = "/ticket.TicketService/GetTicketMessages"
+	TicketService_GetAllTickets_FullMethodName            = "/ticket.TicketService/GetAllTickets"
 )
 
 // TicketServiceClient is the client API for TicketService service.
@@ -49,6 +50,8 @@ type TicketServiceClient interface {
 	AddMessageToActiveTicket(ctx context.Context, in *AddMessageToActiveTicketRequest, opts ...grpc.CallOption) (*MessageResponse, error)
 	// Get messages for ticket
 	GetTicketMessages(ctx context.Context, in *GetTicketMessagesRequest, opts ...grpc.CallOption) (*GetTicketMessagesResponse, error)
+	// Get all tickets from database
+	GetAllTickets(ctx context.Context, in *GetAllTicketsRequest, opts ...grpc.CallOption) (*GetAllTicketsResponse, error)
 }
 
 type ticketServiceClient struct {
@@ -131,6 +134,15 @@ func (c *ticketServiceClient) GetTicketMessages(ctx context.Context, in *GetTick
 	return out, nil
 }
 
+func (c *ticketServiceClient) GetAllTickets(ctx context.Context, in *GetAllTicketsRequest, opts ...grpc.CallOption) (*GetAllTicketsResponse, error) {
+	out := new(GetAllTicketsResponse)
+	err := c.cc.Invoke(ctx, TicketService_GetAllTickets_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TicketServiceServer is the server API for TicketService service.
 // All implementations must embed UnimplementedTicketServiceServer
 // for forward compatibility
@@ -151,6 +163,8 @@ type TicketServiceServer interface {
 	AddMessageToActiveTicket(context.Context, *AddMessageToActiveTicketRequest) (*MessageResponse, error)
 	// Get messages for ticket
 	GetTicketMessages(context.Context, *GetTicketMessagesRequest) (*GetTicketMessagesResponse, error)
+	// Get all tickets from database
+	GetAllTickets(context.Context, *GetAllTicketsRequest) (*GetAllTicketsResponse, error)
 	mustEmbedUnimplementedTicketServiceServer()
 }
 
@@ -181,6 +195,9 @@ func (UnimplementedTicketServiceServer) AddMessageToActiveTicket(context.Context
 }
 func (UnimplementedTicketServiceServer) GetTicketMessages(context.Context, *GetTicketMessagesRequest) (*GetTicketMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTicketMessages not implemented")
+}
+func (UnimplementedTicketServiceServer) GetAllTickets(context.Context, *GetAllTicketsRequest) (*GetAllTicketsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTickets not implemented")
 }
 func (UnimplementedTicketServiceServer) mustEmbedUnimplementedTicketServiceServer() {}
 
@@ -339,6 +356,24 @@ func _TicketService_GetTicketMessages_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TicketService_GetAllTickets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllTicketsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TicketServiceServer).GetAllTickets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TicketService_GetAllTickets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TicketServiceServer).GetAllTickets(ctx, req.(*GetAllTicketsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TicketService_ServiceDesc is the grpc.ServiceDesc for TicketService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -377,6 +412,10 @@ var TicketService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTicketMessages",
 			Handler:    _TicketService_GetTicketMessages_Handler,
+		},
+		{
+			MethodName: "GetAllTickets",
+			Handler:    _TicketService_GetAllTickets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

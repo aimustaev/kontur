@@ -28,6 +28,9 @@ service TicketService {
 
   // Get messages for ticket
   rpc GetTicketMessages(GetTicketMessagesRequest) returns (GetTicketMessagesResponse) {}
+
+  // Get all tickets from database
+  rpc GetAllTickets(GetAllTicketsRequest) returns (GetAllTicketsResponse) {}
 }
 
 // Request to create a new ticket
@@ -135,6 +138,16 @@ message GetTicketMessagesRequest {
 // Response containing list of messages
 message GetTicketMessagesResponse {
   repeated Message messages = 1;
+}
+
+// Request to get all tickets
+message GetAllTicketsRequest {
+  // Empty request as we want to get all tickets
+}
+
+// Response containing list of all tickets
+message GetAllTicketsResponse {
+  repeated TicketResponse tickets = 1;
 }
 
 // Response containing single message

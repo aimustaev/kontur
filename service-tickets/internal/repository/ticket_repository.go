@@ -22,4 +22,7 @@ type TicketRepository interface {
 
 	// GetActiveByUser retrieves all active tickets for a given user
 	GetActiveByUser(ctx context.Context, user string) ([]*model.Ticket, error)
+
+	// GetAll retrieves all tickets from the storage
+	GetAll(ctx context.Context) ([]*model.Ticket, error)
 }

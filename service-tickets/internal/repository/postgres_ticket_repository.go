@@ -278,6 +278,76 @@ func (r *PostgresTicketRepository) GetActiveByUser(ctx context.Context, user str
 	return tickets, nil
 }
 
+// GetAll implements TicketRepository.GetAll
+func (r *PostgresTicketRepository) GetAll(ctx context.Context) ([]*model.Ticket, error) {
+	query := `
+		SELECT 
+			id, status, "user", agent, problem_id, vertical_id,
+			skill_id, user_group_id, channel, created_at, updated_at
+		FROM tickets
+		ORDER BY created_at DESC
+	`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tickets []*model.Ticket
+	for rows.Next() {
+		ticket := &model.Ticket{}
+		var agent sql.NullString
+		var problemID, verticalID, skillID, userGroupID sql.NullInt64
+
+		err := rows.Scan(
+			&ticket.ID,
+			&ticket.Status,
+			&ticket.User,
+			&agent,
+			&problemID,
+			&verticalID,
+			&skillID,
+			&userGroupID,
+			&ticket.Channel,
+			&ticket.CreatedAt,
+			&ticket.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert nullable fields to pointers
+		if agent.Valid {
+			ticket.Agent = &agent.String
+		}
+		if problemID.Valid {
+			val := problemID.Int64
+			ticket.ProblemID = &val
+		}
+		if verticalID.Valid {
+			val := verticalID.Int64
+			ticket.VerticalID = &val
+		}
+		if skillID.Valid {
+			val := skillID.Int64
+			ticket.SkillID = &val
+		}
+		if userGroupID.Valid {
+			val := userGroupID.Int64
+			ticket.UserGroupID = &val
+		}
+
+		tickets = append(tickets, ticket)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tickets, nil
+}
+
 // Close closes the database connection
 func (r *PostgresTicketRepository) Close() error {
 	return r.db.Close()
