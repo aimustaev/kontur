@@ -18,12 +18,14 @@ type Message struct {
 }
 
 type MessageHandler struct {
-	startWorkflowUC StartWorkflowUseCase
+	startWorkflowUC   StartWorkflowUseCase
+	startV2WorkflowUC StartV2WorkflowUseCase
 }
 
-func NewMessageHandler(startWorkflowUC *StartWorkflowUseCase) *MessageHandler {
+func NewMessageHandler(startWorkflowUC *StartWorkflowUseCase, startV2WorkflowUC *StartV2WorkflowUseCase) *MessageHandler {
 	return &MessageHandler{
-		startWorkflowUC: *startWorkflowUC,
+		startWorkflowUC:   *startWorkflowUC,
+		startV2WorkflowUC: *startV2WorkflowUC,
 	}
 }
 
@@ -31,7 +33,7 @@ func (h *MessageHandler) HandleMessage(ctx context.Context, msg Message) error {
 	log.Printf("Processing message: ID=%s, From=%s, To=%s, Channel=%s, %s",
 		msg.ID, msg.From, msg.To, msg.Channel, msg.Body)
 
-	h.startWorkflowUC.Execute(ctx, model.Message{
+	h.startV2WorkflowUC.Execute(ctx, model.Message{
 		ID:      msg.ID,
 		From:    msg.From,
 		To:      msg.To,

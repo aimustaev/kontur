@@ -35,9 +35,10 @@ func main() {
 
 	// Create usecases
 	startWorkflowUseCase := usecase.NewStartWorkflowUseCase(temporalClient.GetClient())
+	startV2WorkflowUseCase := usecase.NewStartV2WorkflowUseCase(temporalClient.GetClient())
 
 	// Create message handler
-	messageHandler := usecase.NewMessageHandler(startWorkflowUseCase)
+	messageHandler := usecase.NewMessageHandler(startWorkflowUseCase, startV2WorkflowUseCase)
 
 	// Create Kafka client
 	kafkaClient, err := kafka.NewClient(cfg)

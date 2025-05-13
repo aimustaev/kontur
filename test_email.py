@@ -8,7 +8,7 @@ msg['From'] = 'ai1@example.am'
 msg['To'] = 'support@example.am'
 msg['Subject'] = 'Test Email from Python'
 
-body = 'This is a test email sent to Mailhog 111'
+body = 'This is a test email sent to Mailhog 11123213'
 msg.attach(MIMEText(body, 'plain'))
 
 # Send email

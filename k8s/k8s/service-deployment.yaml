@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: service
-        image: airat139/service-workflow:6
+        image: airat139/service-workflow:8
         imagePullPolicy: Always
         command: ["./service"]
         ports:
