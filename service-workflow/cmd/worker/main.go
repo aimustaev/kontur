@@ -8,6 +8,7 @@ import (
 	"go.temporal.io/sdk/worker"
 
 	"github.com/aimustaev/service-workflow/internal/config"
+	"github.com/aimustaev/service-workflow/internal/manager_workflow"
 	"github.com/aimustaev/service-workflow/internal/temporal"
 	"github.com/aimustaev/service-workflow/internal/ticket"
 	"github.com/aimustaev/service-workflow/internal/workflow"
@@ -26,7 +27,7 @@ func main() {
 	log.Println("PostgreSQL connection established successfully")
 
 	// Initialize config repository
-	configRepo := config.NewPostgresConfigRepository(db)
+	configRepo := manager_workflow.NewPostgresConfigRepository(db)
 	log.Println("Config repository initialized successfully")
 
 	// Create Temporal client configuration

@@ -1,4 +1,4 @@
-package config
+package manager_workflow
 
 import (
 	"time"

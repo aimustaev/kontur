@@ -2,22 +2,22 @@ package workflow
 
 import (
 	"fmt"
+	"github.com/aimustaev/service-workflow/internal/manager_workflow"
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/workflow"
 
 	act "github.com/aimustaev/service-workflow/internal/activity"
-	"github.com/aimustaev/service-workflow/internal/config"
 	"github.com/aimustaev/service-workflow/internal/engine"
 )
 
 type DynamicWorkflow struct {
 	activity      *act.Activity
 	engine        *engine.WorkflowEngine
-	configManager *config.ConfigManager
+	configManager *manager_workflow.ConfigManager
 }
 
-func NewDynamicWorkflow(activity *act.Activity, temporalClient client.Client, configManager *config.ConfigManager) *DynamicWorkflow {
+func NewDynamicWorkflow(activity *act.Activity, temporalClient client.Client, configManager *manager_workflow.ConfigManager) *DynamicWorkflow {
 	// Создаем движок с маппингом activity
 	activitiesMap := map[string]interface{}{
 		"CreateTicketActivity":       activity.CreateTicketActivity,

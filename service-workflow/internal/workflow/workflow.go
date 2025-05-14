@@ -2,8 +2,7 @@ package workflow
 
 import (
 	"context"
-	"encoding/json"
-	"os"
+	"github.com/aimustaev/service-workflow/internal/manager_workflow"
 	"time"
 
 	"go.temporal.io/sdk/client"
@@ -11,17 +10,15 @@ import (
 	workflow2 "go.temporal.io/sdk/workflow"
 
 	act "github.com/aimustaev/service-workflow/internal/activity"
-	"github.com/aimustaev/service-workflow/internal/config"
-	"github.com/aimustaev/service-workflow/internal/engine"
 	"github.com/aimustaev/service-workflow/internal/generated/proto"
 )
 
 type Workflow struct {
 	activity      *act.Activity
-	configManager *config.ConfigManager
+	configManager *manager_workflow.ConfigManager
 }
 
-func NewWorkflow(activity *act.Activity, configManager *config.ConfigManager) *Workflow {
+func NewWorkflow(activity *act.Activity, configManager *manager_workflow.ConfigManager) *Workflow {
 	return &Workflow{
 		activity:      activity,
 		configManager: configManager,
@@ -29,11 +26,11 @@ func NewWorkflow(activity *act.Activity, configManager *config.ConfigManager) *W
 }
 
 // RegisterWorkflows registers all workflows with the worker
-func RegisterWorkflows(w worker.Worker, ticketClient proto.TicketServiceClient, temporalClient client.Client, configRepo config.ConfigVersionRepository) {
+func RegisterWorkflows(w worker.Worker, ticketClient proto.TicketServiceClient, temporalClient client.Client, configRepo manager_workflow.ConfigVersionRepository) {
 	activity := act.NewActivity(ticketClient)
 
 	// Создаем менеджер конфигураций с интервалом обновления 1 минута
-	configManager := config.NewConfigManager(configRepo, time.Minute)
+	configManager := manager_workflow.NewConfigManager(configRepo, time.Minute)
 	configManager.Start(context.Background())
 
 	workflow := NewWorkflow(activity, configManager)
@@ -52,19 +49,4 @@ func RegisterWorkflows(w worker.Worker, ticketClient proto.TicketServiceClient, 
 	w.RegisterActivity(workflow.activity.GetTicketByUserActivity)
 	w.RegisterActivity(workflow.activity.AddMassageToTicketActivity)
 	w.RegisterActivity(workflow.activity.SolveTicketAcitivity)
-}
-
-// loadWorkflowDefinition is kept for backward compatibility and testing
-func loadWorkflowDefinition(filename string) engine.WorkflowDefinition {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	var def engine.WorkflowDefinition
-	if err := json.Unmarshal(data, &def); err != nil {
-		panic(err)
-	}
-
-	return def
 }
