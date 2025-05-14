@@ -3,8 +3,8 @@ package workflow
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
+	"time"
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -17,31 +17,27 @@ import (
 )
 
 type Workflow struct {
-	activity   *act.Activity
-	configRepo config.ConfigVersionRepository
+	activity      *act.Activity
+	configManager *config.ConfigManager
 }
 
-func NewWorkflow(activity *act.Activity, configRepo config.ConfigVersionRepository) *Workflow {
+func NewWorkflow(activity *act.Activity, configManager *config.ConfigManager) *Workflow {
 	return &Workflow{
-		activity:   activity,
-		configRepo: configRepo,
+		activity:      activity,
+		configManager: configManager,
 	}
 }
 
 // RegisterWorkflows registers all workflows with the worker
 func RegisterWorkflows(w worker.Worker, ticketClient proto.TicketServiceClient, temporalClient client.Client, configRepo config.ConfigVersionRepository) {
 	activity := act.NewActivity(ticketClient)
-	workflow := NewWorkflow(activity, configRepo)
 
-	dynamicWorkflow := NewDynamicWorkflow(activity, temporalClient)
+	// Создаем менеджер конфигураций с интервалом обновления 1 минута
+	configManager := config.NewConfigManager(configRepo, time.Minute)
+	configManager.Start(context.Background())
 
-	// Load workflow definition from database
-	workflowDef, err := loadWorkflowDefinitionFromDB(context.Background(), configRepo, "SimpleWorkflow")
-	if err != nil {
-		panic(fmt.Errorf("failed to load workflow definition: %w", err))
-	}
-
-	dynamicWorkflow.AddDefinition("DynamicTicketWorkflow", workflowDef)
+	workflow := NewWorkflow(activity, configManager)
+	dynamicWorkflow := NewDynamicWorkflow(activity, temporalClient, configManager)
 
 	// Register workflows
 	w.RegisterWorkflowWithOptions(dynamicWorkflow.Execute, workflow2.RegisterOptions{Name: "DynamicTicketWorkflow"})
@@ -56,24 +52,6 @@ func RegisterWorkflows(w worker.Worker, ticketClient proto.TicketServiceClient, 
 	w.RegisterActivity(workflow.activity.GetTicketByUserActivity)
 	w.RegisterActivity(workflow.activity.AddMassageToTicketActivity)
 	w.RegisterActivity(workflow.activity.SolveTicketAcitivity)
-}
-
-// loadWorkflowDefinitionFromDB loads a workflow definition from the database
-func loadWorkflowDefinitionFromDB(ctx context.Context, repo config.ConfigVersionRepository, name string) (engine.WorkflowDefinition, error) {
-	config, err := repo.GetLatestActive(name)
-	if err != nil {
-		return engine.WorkflowDefinition{}, fmt.Errorf("failed to get latest active config: %w", err)
-	}
-	if config == nil {
-		return engine.WorkflowDefinition{}, fmt.Errorf("no active configuration found for workflow: %s", name)
-	}
-
-	var def engine.WorkflowDefinition
-	if err := json.Unmarshal(config.Content, &def); err != nil {
-		return engine.WorkflowDefinition{}, fmt.Errorf("failed to unmarshal workflow definition: %w", err)
-	}
-
-	return def, nil
 }
 
 // loadWorkflowDefinition is kept for backward compatibility and testing

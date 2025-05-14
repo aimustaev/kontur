@@ -7,16 +7,17 @@ import (
 	"go.temporal.io/sdk/workflow"
 
 	act "github.com/aimustaev/service-workflow/internal/activity"
+	"github.com/aimustaev/service-workflow/internal/config"
 	"github.com/aimustaev/service-workflow/internal/engine"
 )
 
 type DynamicWorkflow struct {
-	activity     *act.Activity
-	engine       *engine.WorkflowEngine
-	workflowDefs map[string]engine.WorkflowDefinition // Кеш определений
+	activity      *act.Activity
+	engine        *engine.WorkflowEngine
+	configManager *config.ConfigManager
 }
 
-func NewDynamicWorkflow(activity *act.Activity, temporalClient client.Client) *DynamicWorkflow {
+func NewDynamicWorkflow(activity *act.Activity, temporalClient client.Client, configManager *config.ConfigManager) *DynamicWorkflow {
 	// Создаем движок с маппингом activity
 	activitiesMap := map[string]interface{}{
 		"CreateTicketActivity":       activity.CreateTicketActivity,
@@ -30,9 +31,9 @@ func NewDynamicWorkflow(activity *act.Activity, temporalClient client.Client) *D
 	}
 
 	return &DynamicWorkflow{
-		activity:     activity,
-		engine:       engine.NewEngine(temporalClient, activitiesMap),
-		workflowDefs: make(map[string]engine.WorkflowDefinition),
+		activity:      activity,
+		engine:        engine.NewEngine(temporalClient, activitiesMap),
+		configManager: configManager,
 	}
 }
 
@@ -41,16 +42,11 @@ func (w *DynamicWorkflow) Execute(ctx workflow.Context, input map[string]interfa
 	// Получаем имя workflow из контекста
 	workflowName := workflow.GetInfo(ctx).WorkflowType.Name
 
-	// Загружаем определение (в реальности можно из БД/файла/кэша)
-	def, ok := w.workflowDefs[workflowName]
-	if !ok {
-		return nil, fmt.Errorf("workflow definition not found: %s", workflowName)
+	// Получаем актуальное определение workflow из менеджера конфигураций
+	def, err := w.configManager.GetWorkflowDefinition(workflowName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workflow definition: %w", err)
 	}
 
 	return w.engine.ExecuteWorkflow(ctx, def, input)
-}
-
-// AddDefinition добавляет/обновляет определение workflow
-func (w *DynamicWorkflow) AddDefinition(name string, def engine.WorkflowDefinition) {
-	w.workflowDefs[name] = def
 }
