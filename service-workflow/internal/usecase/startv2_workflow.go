@@ -44,8 +44,8 @@ func (uc *StartV2WorkflowUseCase) Execute(ctx context.Context, message model.Mes
 		"NewMessage",       // Имя сигнала
 		message,            // Данные сигнала
 		workflowOptions,
-		"SelectorWorkflow", // Функция Workflow (если его нет)
-		workflowInput,      // Аргументы Workflow
+		"DynamicTicketWorkflow", // Функция Workflow (если его нет)
+		workflowInput,           // Аргументы Workflow
 	)
 
 	if err != nil {

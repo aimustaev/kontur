@@ -41,7 +41,7 @@ func main() {
 
 	// Register workflows
 	log.Println("Registering workflows...")
-	workflow.RegisterWorkflows(w, ticketClient.GetClient())
+	workflow.RegisterWorkflows(w, ticketClient.GetClient(), temporalClient.GetClient())
 
 	// Start worker
 	log.Println("Starting worker...")

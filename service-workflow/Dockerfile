@@ -26,6 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/service /app/service
 COPY --from=builder /app/worker /app/worker
 COPY --from=builder /app/consumer /app/consumer
+COPY --from=builder /app/ticket_workflow.json /app/ticket_workflow.json
 
 # Run as non-root user
 RUN adduser -D -g '' appuser

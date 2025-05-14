@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"log"
-	"time"
 
 	"go.temporal.io/sdk/client"
 
@@ -35,16 +34,26 @@ func (uc *StartWorkflowUseCase) Execute(ctx context.Context, message model.Messa
 	}
 
 	workflowOptions := client.StartWorkflowOptions{
-		ID:        "workflow-ticket-" + time.Now().Format("20060102150405"),
+		ID:        "workflow-ticket-" + message.From,
 		TaskQueue: "workflow-ticket",
 	}
 
 	log.Printf("Starting workflow execution with input: %s", workflowInput.Message)
-	workflowRun, err := uc.temporalClient.ExecuteWorkflow(
-		ctx,
+	//workflowRun, err := uc.temporalClient.ExecuteWorkflow(
+	//	ctx,
+	//	workflowOptions,
+	//	"SimpleWorkflow",
+	//	workflowInput,
+	//)
+
+	workflowRun, err := uc.temporalClient.SignalWithStartWorkflow(
+		context.Background(),
+		workflowOptions.ID, // ID Workflow (на основе userID)
+		"NewMessage",       // Имя сигнала
+		message,            // Данные сигнала
 		workflowOptions,
-		"SimpleWorkflow",
-		workflowInput,
+		"DynamicTicketWorkflow", // Функция Workflow (если его нет)
+		workflowInput,           // Аргументы Workflow
 	)
 	if err != nil {
 		log.Printf("Error starting workflow: %v", err)

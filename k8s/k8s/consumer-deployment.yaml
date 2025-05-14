@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: consumer
-        image: airat139/service-workflow:8
+        image: airat139/service-workflow:9
         imagePullPolicy: Always
         command: ["/app/consumer"]
         envFrom:
