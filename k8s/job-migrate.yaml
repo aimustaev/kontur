@@ -89,4 +89,118 @@ data:
     CREATE INDEX IF NOT EXISTS idx_messages_channel ON messages(channel);
     CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
   "000002_create_messages_table.down.sql": |
-    DROP TABLE IF EXISTS messages; 
+    DROP TABLE IF EXISTS messages;
+  "000003_create_configs_schema.up.sql": |
+    -- Create schema for configurations
+    CREATE SCHEMA IF NOT EXISTS configs;
+
+    -- Create table for storing configuration versions
+    CREATE TABLE IF NOT EXISTS configs.config_versions (
+        id VARCHAR(36) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        version VARCHAR(50) NOT NULL,
+        content JSONB NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        created_by VARCHAR(255) NOT NULL,
+        is_active BOOLEAN DEFAULT true,
+        UNIQUE(name, version)
+    );
+
+    -- Add indexes for frequently queried fields
+    CREATE INDEX IF NOT EXISTS idx_config_versions_name ON configs.config_versions(name);
+    CREATE INDEX IF NOT EXISTS idx_config_versions_version ON configs.config_versions(version);
+    CREATE INDEX IF NOT EXISTS idx_config_versions_created_at ON configs.config_versions(created_at);
+    CREATE INDEX IF NOT EXISTS idx_config_versions_is_active ON configs.config_versions(is_active);
+
+    -- Add trigger to automatically update updated_at
+    CREATE OR REPLACE FUNCTION configs.update_updated_at_column()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        NEW.updated_at = CURRENT_TIMESTAMP;
+        RETURN NEW;
+    END;
+    $$ language 'plpgsql';
+
+    CREATE TRIGGER update_config_versions_updated_at
+        BEFORE UPDATE ON configs.config_versions
+        FOR EACH ROW
+        EXECUTE FUNCTION configs.update_updated_at_column();
+  "000003_create_configs_schema.down.sql": |
+    DROP TRIGGER IF EXISTS update_config_versions_updated_at ON configs.config_versions;
+    DROP FUNCTION IF EXISTS configs.update_updated_at_column();
+    DROP TABLE IF EXISTS configs.config_versions;
+    DROP SCHEMA IF EXISTS configs;
+  "000004_insert_initial_workflow.up.sql": |
+    -- Insert initial workflow configuration
+    INSERT INTO configs.config_versions (
+        id,
+        name,
+        version,
+        content,
+        created_by
+    ) VALUES (
+        gen_random_uuid(),
+        'SimpleWorkflow',
+        '1.0',
+        '{
+            "name": "SimpleWorkflow",
+            "version": "1.0",
+            "states": [
+                {
+                    "name": "GetOrCreateTicket",
+                    "type": "activity",
+                    "activityName": "GetOrCreateTicketActivity",
+                    "input": ["$.input.Message"],
+                    "output": "ticket",
+                    "outputSchema": {"type": "object"}
+                },
+                {
+                    "name": "AddInitialMessage",
+                    "type": "activity",
+                    "activityName": "AddMassageToTicketActivity",
+                    "input": ["$.input.Message", "$.ticket.Id"],
+                    "outputSchema": {"type": "object"}
+                },
+                {
+                    "name": "MessageListener",
+                    "type": "signal",
+                    "signalName": "NewMessage",
+                    "actions": [
+                        {
+                            "type": "activity",
+                            "activityName": "AddMassageToTicketActivity",
+                            "input": ["$.signalPayload", "$.ticket.Id"],
+                            "outputSchema": {"type": "object"}
+                        }
+                    ],
+                    "concurrent": true
+                },
+                {
+                    "name": "ClassifyTicket",
+                    "type": "activity",
+                    "activityName": "ClassifierAcitivity",
+                    "input": "$.ticket",
+                    "output": "ticket",
+                    "outputSchema": {"type": "object"}
+                },
+                {
+                    "name": "WaitForResponse",
+                    "type": "timer",
+                    "timerDuration": "5s"
+                },
+                {
+                    "name": "SolveTicket",
+                    "type": "activity",
+                    "activityName": "SolveTicketAcitivity",
+                    "input": "$.ticket",
+                    "outputSchema": {"type": "object"}
+                }
+            ]
+        }'::jsonb,
+        'system'
+    );
+  "000004_insert_initial_workflow.down.sql": |
+    -- Remove initial workflow configuration
+    DELETE FROM configs.config_versions 
+    WHERE name = 'SimpleWorkflow' AND version = '1.0'; 

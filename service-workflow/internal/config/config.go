@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -13,6 +14,7 @@ type Config struct {
 	Temporal TemporalConfig
 	Kafka    KafkaConfig
 	Ticket   TicketConfig
+	Postgres PostgresConfig
 }
 
 // HTTPConfig holds HTTP server configuration
@@ -41,6 +43,16 @@ type TicketConfig struct {
 	Port string
 }
 
+// PostgresConfig holds PostgreSQL configuration
+type PostgresConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Database string
+	SSLMode  string
+}
+
 // Load loads configuration from environment variables
 func Load() *Config {
 	// Load .env file if it exists
@@ -67,6 +79,14 @@ func Load() *Config {
 			Host: getEnv("TICKET_SERVICE_HOST", "localhost"),
 			Port: getEnv("TICKET_SERVICE_PORT", "50051"),
 		},
+		Postgres: PostgresConfig{
+			Host:     getEnv("POSTGRES_HOST", "localhost"),
+			Port:     getEnv("POSTGRES_PORT", "5432"),
+			User:     getEnv("POSTGRES_USER", "postgres"),
+			Password: getEnv("POSTGRES_PASSWORD", "postgres"),
+			Database: getEnv("POSTGRES_DB", "service_tickets"),
+			SSLMode:  getEnv("POSTGRES_SSLMODE", "disable"),
+		},
 	}
 }
 
@@ -83,6 +103,19 @@ func (c *Config) GetTemporalAddr() string {
 // GetTicketServiceAddr returns the full ticket service address
 func (c *Config) GetTicketServiceAddr() string {
 	return c.Ticket.Host + ":" + c.Ticket.Port
+}
+
+// GetPostgresDSN returns the PostgreSQL connection string
+func (c *Config) GetPostgresDSN() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.Postgres.Host,
+		c.Postgres.Port,
+		c.Postgres.User,
+		c.Postgres.Password,
+		c.Postgres.Database,
+		c.Postgres.SSLMode,
+	)
 }
 
 // getEnv gets an environment variable or returns a default value

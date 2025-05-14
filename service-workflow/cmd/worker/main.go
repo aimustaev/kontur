@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"go.temporal.io/sdk/worker"
 
 	"github.com/aimustaev/service-workflow/internal/config"
@@ -14,6 +16,18 @@ import (
 func main() {
 	// Load configuration
 	cfg := config.Load()
+
+	// Initialize PostgreSQL connection
+	db, err := sqlx.Connect("postgres", cfg.GetPostgresDSN())
+	if err != nil {
+		log.Fatalf("Unable to connect to PostgreSQL: %v", err)
+	}
+	defer db.Close()
+	log.Println("PostgreSQL connection established successfully")
+
+	// Initialize config repository
+	configRepo := config.NewPostgresConfigRepository(db)
+	log.Println("Config repository initialized successfully")
 
 	// Create Temporal client configuration
 	temporalConfig := temporal.DefaultConfig()
@@ -41,7 +55,7 @@ func main() {
 
 	// Register workflows
 	log.Println("Registering workflows...")
-	workflow.RegisterWorkflows(w, ticketClient.GetClient(), temporalClient.GetClient())
+	workflow.RegisterWorkflows(w, ticketClient.GetClient(), temporalClient.GetClient(), configRepo)
 
 	// Start worker
 	log.Println("Starting worker...")
