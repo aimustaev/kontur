@@ -58,6 +58,9 @@ func main() {
 	updateConfigHandler := api.NewUpdateConfigHandler(configRepo)
 	listConfigHandler := api.NewListConfigHandler(configRepo)
 	deactivateConfigHandler := api.NewDeactivateConfigHandler(configRepo)
+	getSchemaHandler := api.NewGetSchemaHandler(configRepo)
+	listNamesHandler := api.NewListNamesHandler(configRepo)
+	listSummariesHandler := api.NewListSummariesHandler(configRepo)
 
 	// Создаем роутер
 	router := mux.NewRouter()
@@ -68,12 +71,15 @@ func main() {
 	router.HandleFunc("/health", healthHandler.Handle).Methods(http.MethodGet)
 
 	// Регистрируем маршруты для конфигураций
-	router.HandleFunc("/config/{name}/latest", getLatestConfigHandler.Handle).Methods(http.MethodGet)
-	router.HandleFunc("/config/{name}/version/{version}", getVersionConfigHandler.Handle).Methods(http.MethodGet)
-	router.HandleFunc("/config", createConfigHandler.Handle).Methods(http.MethodPost)
-	router.HandleFunc("/config/{name}/version/{version}", updateConfigHandler.Handle).Methods(http.MethodPut)
-	router.HandleFunc("/config/{name}", listConfigHandler.Handle).Methods(http.MethodGet)
-	router.HandleFunc("/config/{name}/version/{version}/deactivate", deactivateConfigHandler.Handle).Methods(http.MethodPost)
+	router.HandleFunc("/config/{name}/latest", getLatestConfigHandler.Handle).Methods("GET")
+	router.HandleFunc("/config/{id}/version/{version}", getVersionConfigHandler.Handle).Methods("GET")
+	router.HandleFunc("/config", createConfigHandler.Handle).Methods("POST")
+	router.HandleFunc("/config/{id}/version/{version}", updateConfigHandler.Handle).Methods("PUT")
+	router.HandleFunc("/config/{id}", listConfigHandler.Handle).Methods("GET")
+	router.HandleFunc("/config/{id}/version/{version}/deactivate", deactivateConfigHandler.Handle).Methods("POST")
+	router.HandleFunc("/config/{name}/schema", getSchemaHandler.Handle).Methods("GET")
+	router.HandleFunc("/configs", listNamesHandler.Handle).Methods(http.MethodGet)
+	router.HandleFunc("/configs/summaries", listSummariesHandler.Handle).Methods(http.MethodGet)
 
 	// Создаем HTTP сервер
 	srv := &http.Server{

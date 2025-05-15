@@ -6,14 +6,15 @@ import (
 	"net/http"
 
 	"github.com/aimustaev/service-workflow/internal/manager_workflow"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 type UpdateConfigHandler struct {
-	repo ConfigVersionRepository
+	repo manager_workflow.ConfigVersionRepository
 }
 
-func NewUpdateConfigHandler(repo ConfigVersionRepository) *UpdateConfigHandler {
+func NewUpdateConfigHandler(repo manager_workflow.ConfigVersionRepository) *UpdateConfigHandler {
 	return &UpdateConfigHandler{
 		repo: repo,
 	}
@@ -21,10 +22,16 @@ func NewUpdateConfigHandler(repo ConfigVersionRepository) *UpdateConfigHandler {
 
 func (h *UpdateConfigHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	name := vars["name"]
+	idStr := vars["id"]
 	version := vars["version"]
-	if name == "" || version == "" {
-		http.Error(w, "Name and version parameters are required", http.StatusBadRequest)
+	if idStr == "" || version == "" {
+		http.Error(w, "ID and version parameters are required", http.StatusBadRequest)
+		return
+	}
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
 		return
 	}
 
@@ -34,7 +41,7 @@ func (h *UpdateConfigHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config.Name = name
+	config.ID = id
 	config.Version = version
 
 	if err := h.repo.Update(&config); err != nil {

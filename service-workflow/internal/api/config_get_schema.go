@@ -5,21 +5,22 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/aimustaev/service-workflow/internal/manager_workflow"
 	"github.com/gorilla/mux"
+
+	"github.com/aimustaev/service-workflow/internal/manager_workflow"
 )
 
-type GetLatestConfigHandler struct {
+type GetSchemaHandler struct {
 	repo manager_workflow.ConfigVersionRepository
 }
 
-func NewGetLatestConfigHandler(repo manager_workflow.ConfigVersionRepository) *GetLatestConfigHandler {
-	return &GetLatestConfigHandler{
+func NewGetSchemaHandler(repo manager_workflow.ConfigVersionRepository) *GetSchemaHandler {
+	return &GetSchemaHandler{
 		repo: repo,
 	}
 }
 
-func (h *GetLatestConfigHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *GetSchemaHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 	if name == "" {
@@ -38,6 +39,11 @@ func (h *GetLatestConfigHandler) Handle(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if config.Schema == nil {
+		http.Error(w, "Schema not found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(config)
+	json.NewEncoder(w).Encode(config.Schema)
 }

@@ -1,0 +1,83 @@
+{
+    "name": "SimpleWorkflow",
+    "version": "1.0",
+    "states": [
+        {
+            "name": "GetOrCreateTicket",
+            "type": "activity",
+            "activityName": "GetOrCreateTicketActivity",
+            "input": [
+                "$.input.Message"
+            ],
+            "output": "ticket",
+            "outputSchema": {
+                "type": "object"
+            }
+        },
+        {
+            "name": "AddInitialMessage",
+            "type": "activity",
+            "activityName": "AddMassageToTicketActivity",
+            "input": [
+                "$.input.Message",
+                "$.ticket.Id"
+            ],
+            "outputSchema": {
+                "type": "object"
+            }
+        },
+        {
+            "name": "MessageListener",
+            "type": "signal",
+            "signalName": "NewMessage",
+            "actions": [
+                {
+                    "type": "activity",
+                    "activityName": "AddMassageToTicketActivity",
+                    "input": [
+                        "$.signalPayload",
+                        "$.ticket.Id"
+                    ],
+                    "outputSchema": {
+                        "type": "object"
+                    }
+                }
+            ],
+            "concurrent": true
+        },
+        {
+            "name": "ClassifyTicket",
+            "type": "activity",
+            "activityName": "ClassifierAcitivity",
+            "input": "$.ticket",
+            "output": "ticket",
+            "outputSchema": {
+                "type": "object"
+            }
+        },
+        {
+            "name": "ClassifyTicket",
+            "type": "activity",
+            "activityName": "ClassifierAcitivity",
+            "input": "$.ticket",
+            "output": "ticket",
+            "outputSchema": {
+                "type": "object"
+            }
+        },
+        {
+            "name": "WaitForResponse",
+            "type": "timer",
+            "timerDuration": "5s"
+        },
+        {
+            "name": "SolveTicket",
+            "type": "activity",
+            "activityName": "SolveTicketAcitivity",
+            "input": "$.ticket",
+            "outputSchema": {
+                "type": "object"
+            }
+        }
+    ]
+}

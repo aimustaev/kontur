@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: airat139/service-kontur-frontend:latest
+        image: airat139/service-kontur-frontend:1
         ports:
         - containerPort: 80
         resources:

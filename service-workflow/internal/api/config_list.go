@@ -6,14 +6,15 @@ import (
 	"net/http"
 
 	"github.com/aimustaev/service-workflow/internal/manager_workflow"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 type ListConfigHandler struct {
-	repo ConfigVersionRepository
+	repo manager_workflow.ConfigVersionRepository
 }
 
-func NewListConfigHandler(repo ConfigVersionRepository) *ListConfigHandler {
+func NewListConfigHandler(repo manager_workflow.ConfigVersionRepository) *ListConfigHandler {
 	return &ListConfigHandler{
 		repo: repo,
 	}
@@ -21,14 +22,20 @@ func NewListConfigHandler(repo ConfigVersionRepository) *ListConfigHandler {
 
 func (h *ListConfigHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	name := vars["name"]
-	if name == "" {
-		http.Error(w, "Name parameter is required", http.StatusBadRequest)
+	idStr := vars["id"]
+	if idStr == "" {
+		http.Error(w, "ID parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
 		return
 	}
 
 	filter := manager_workflow.ConfigVersionFilter{
-		Name: &name,
+		ID: &id,
 	}
 
 	configs, err := h.repo.List(filter)

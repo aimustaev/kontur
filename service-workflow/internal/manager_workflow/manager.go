@@ -24,6 +24,7 @@ type ConfigManager struct {
 type cachedConfig struct {
 	config     *ConfigVersion
 	definition engine.WorkflowDefinition
+	schema     *json.RawMessage
 	updatedAt  time.Time
 }
 
@@ -74,6 +75,41 @@ func (m *ConfigManager) GetWorkflowDefinition(name string) (engine.WorkflowDefin
 	}
 
 	return cached.definition, nil
+}
+
+// GetWorkflowSchema возвращает визуальную схему для воркфлоу
+func (m *ConfigManager) GetWorkflowSchema(name string) (*json.RawMessage, error) {
+	m.cacheMutex.RLock()
+	cached, exists := m.cache[name]
+	m.cacheMutex.RUnlock()
+
+	if !exists {
+		config, err := m.repo.GetLatestActive(name)
+		if err != nil {
+			return nil, err
+		}
+		if config == nil {
+			return nil, ErrConfigNotFound
+		}
+
+		def, err := m.parseConfig(config)
+		if err != nil {
+			return nil, err
+		}
+
+		m.cacheMutex.Lock()
+		m.cache[name] = &cachedConfig{
+			config:     config,
+			definition: def,
+			schema:     config.Schema,
+			updatedAt:  time.Now(),
+		}
+		m.cacheMutex.Unlock()
+
+		return config.Schema, nil
+	}
+
+	return cached.schema, nil
 }
 
 // loadAndCacheConfig загружает конфигурацию из БД и кэширует её

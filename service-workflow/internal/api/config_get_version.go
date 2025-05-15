@@ -5,14 +5,16 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/aimustaev/service-workflow/internal/manager_workflow"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 type GetVersionConfigHandler struct {
-	repo ConfigVersionRepository
+	repo manager_workflow.ConfigVersionRepository
 }
 
-func NewGetVersionConfigHandler(repo ConfigVersionRepository) *GetVersionConfigHandler {
+func NewGetVersionConfigHandler(repo manager_workflow.ConfigVersionRepository) *GetVersionConfigHandler {
 	return &GetVersionConfigHandler{
 		repo: repo,
 	}
@@ -20,14 +22,20 @@ func NewGetVersionConfigHandler(repo ConfigVersionRepository) *GetVersionConfigH
 
 func (h *GetVersionConfigHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	name := vars["name"]
+	idStr := vars["id"]
 	version := vars["version"]
-	if name == "" || version == "" {
-		http.Error(w, "Name and version parameters are required", http.StatusBadRequest)
+	if idStr == "" || version == "" {
+		http.Error(w, "ID and version parameters are required", http.StatusBadRequest)
 		return
 	}
 
-	config, err := h.repo.GetByVersion(name, version)
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		return
+	}
+
+	config, err := h.repo.GetByVersion(id, version)
 	if err != nil {
 		log.Printf("Error getting config version: %v", err)
 		http.Error(w, "Failed to get config version", http.StatusInternalServerError)
